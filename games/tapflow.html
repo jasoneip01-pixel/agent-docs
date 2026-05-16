@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,user-scalable=no">
+<title>TapFlow — 指尖解压</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:#090e17;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.game-wrap{
+  background:#0f1622;
+  border-radius:28px;
+  padding:28px 24px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 1px 0 rgba(148,200,255,.06);
+  width:380px;
+}
+
+/* Header */
+.top{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.top h1{
+  font-size:18px;font-weight:800;letter-spacing:-.3px;
+  color:#e2e8f0;
+}
+.top h1 span{color:#4dd0e1}
+.score-wrap{text-align:right}
+.score-label{font-size:10px;color:#5a6a8a;font-weight:600;letter-spacing:.3px}
+.score{font-size:22px;font-weight:800;color:#e2e8f0;letter-spacing:-.5px;line-height:1}
+
+/* Grid */
+.grid-wrap{
+  position:relative;
+  background:#0a1120;
+  border-radius:16px;
+  padding:6px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:4px;
+}
+.cell{
+  aspect-ratio:1;
+  border-radius:8px;
+  cursor:pointer;
+  transition:transform .12s ease;
+  position:relative;
+}
+.cell:active{transform:scale(.92)}
+.cell.t0{background:linear-gradient(135deg,#4dd0e1,#26b5c8)}
+.cell.t1{background:linear-gradient(135deg,#a78bfa,#8b5cf6)}
+.cell.t2{background:linear-gradient(135deg,#4ade80,#22c55e)}
+.cell.t3{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+.cell.t4{background:linear-gradient(135deg,#f87171,#ef4444)}
+.cell.t5{background:linear-gradient(135deg,#f472b6,#ec4899)}
+.cell::after{
+  content:'';position:absolute;inset:3px;border-radius:6px;
+  background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 60%);
+  pointer-events:none;
+}
+.cell.highlight{
+  box-shadow:0 0 0 2px #fff,0 0 20px rgba(77,208,225,.3);
+  transform:scale(1.04);
+  z-index:2;
+}
+
+/* Animations */
+.cell.falling{animation:fall .25s ease}
+@keyframes fall{from{transform:translateY(-60px);opacity:.5}to{transform:translateY(0);opacity:1}}
+.cell.popping{animation:pop .3s ease forwards;pointer-events:none}
+@keyframes pop{
+  0%{transform:scale(1);opacity:1}
+  40%{transform:scale(1.2);opacity:.8}
+  100%{transform:scale(0);opacity:0}
+}
+.cell.appearing{animation:appear .35s ease}
+@keyframes appear{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Controls */
+.controls{
+  display:flex;gap:8px;align-items:center;
+}
+.btn{
+  border:none;border-radius:12px;padding:10px 20px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  font-family:inherit;letter-spacing:-.1px;
+  transition:all .15s;
+}
+.btn:active{transform:scale(.95)}
+.btn-reset{
+  background:#1a2540;color:#7888a8;flex:1;
+}
+.btn-reset:hover{background:#1e2a48;color:#e2e8f0}
+.btn-new{
+  background:linear-gradient(135deg,#4dd0e1,#26b5c8);
+  color:#0a1120;flex:2;
+}
+.btn-new:hover{filter:brightness(1.1)}
+.btn-hint{
+  background:#1a2540;color:#7888a8;flex:1;
+  font-size:11px;
+}
+.btn-hint:hover{background:#1e2a48;color:#e2e8f0}
+.btn-hint:disabled{opacity:.4}
+
+/* Hint badge */
+.hint-badge{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:12px;font-weight:600;color:#7888a8;
+  padding:4px 12px;border-radius:8px;
+  background:rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.hint-badge.show{opacity:1}
+
+/* Game over overlay */
+.gameover{
+  display:none;position:absolute;inset:0;
+  background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+  border-radius:16px;
+  flex-direction:column;align-items:center;justify-content:center;
+  z-index:10;gap:8px;
+}
+.gameover.show{display:flex}
+.gameover h2{font-size:22px;font-weight:800;color:#e2e8f0;letter-spacing:-.5px}
+.gameover p{font-size:13px;color:#5a6a8a;margin-bottom:8px}
+.gameover .final-score{font-size:36px;font-weight:900;color:#4dd0e1;letter-spacing:-1px}
+.gameover .btn{background:#4dd0e1;color:#0a1120;font-size:14px;padding:12px 28px}
+
+/* Combo popup */
+.combo{
+  position:absolute;pointer-events:none;font-weight:900;
+  color:#4dd0e1;font-size:16px;
+  animation:comboUp .6s ease forwards;
+  z-index:5;
+}
+@keyframes comboUp{
+  0%{transform:translateY(0);opacity:1}
+  100%{transform:translateY(-40px);opacity:0}
+}
+
+/* Mobile */
+@media(max-width:400px){
+  .game-wrap{padding:20px 16px 16px;border-radius:20px;width:calc(100vw - 16px)}
+  .grid{gap:3px}
+  .top h1{font-size:16px}
+  .score{font-size:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="game-wrap">
+  <div class="top">
+    <h1>Tap<span>Flow</span></h1>
+    <div class="score-wrap">
+      <div class="score-label">分数</div>
+      <div class="score" id="score">0</div>
+    </div>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+    <div class="gameover" id="gameover">
+      <div class="final-score" id="final-score">0</div>
+      <h2>棋盘满了</h2>
+      <p>再来一局？</p>
+      <button class="btn" onclick="initGame()">↻ 新一局</button>
+    </div>
+    <div class="hint-badge" id="hint-badge">✨ 可消除</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-hint" id="hint-btn" onclick="showHint()">✨</button>
+    <button class="btn btn-reset" onclick="initGame()">↻ 重来</button>
+    <button class="btn btn-new" onclick="initGame()">› 新棋局</button>
+  </div>
+</div>
+
+<script>
+const ROWS = 8, COLS = 6, TYPES = 6;
+let grid = [], score = 0, selected = [], locked = false;
+let comboCount = 0;
+
+function rand(max){return Math.floor(Math.random()*max)}
+
+function initGame(){
+  grid = [];
+  for(let r=0;r<ROWS;r++){
+    grid[r]=[];
+    for(let c=0;c<COLS;c++) grid[r][c]=rand(TYPES);
+  }
+  score = 0; locked = false; selected = [];
+  document.getElementById('gameover').classList.remove('show');
+  document.getElementById('score').textContent = '0';
+  ensureValidMoves();
+  render();
+}
+
+function render(){
+  const g = document.getElementById('grid');
+  g.innerHTML = '';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const div = document.createElement('div');
+      div.className = 'cell t' + grid[r][c];
+      div.dataset.r = r; div.dataset.c = c;
+      div.onclick = () => tapCell(r,c);
+      g.appendChild(div);
+    }
+  }
+}
+
+function tapCell(r,c){
+  if(locked || grid[r][c]===-1) return;
+  const type = grid[r][c];
+  // Find connected group
+  const group = findGroup(r,c,type);
+  if(group.length < 2){
+    // Single cell shake effect
+    const el = getCell(r,c);
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = 'pop .2s ease';
+    setTimeout(()=>el.style.animation='',200);
+    return;
+  }
+
+  locked = true;
+  comboCount++;
+
+  // Highlight then clear
+  group.forEach(([gr,gc])=>{
+    const el = getCell(gr,gc);
+    el.classList.add('popping');
+  });
+
+  // Score: group^1.5 * combo multiplier
+  const baseScore = Math.floor(Math.pow(group.length, 1.5) * 10);
+  const comboMult = Math.min(comboCount, 5);
+  const addScore = baseScore * comboMult;
+  score += addScore;
+  document.getElementById('score').textContent = score;
+
+  // Show combo text
+  if(comboCount >= 2){
+    showCombo(group, comboCount);
+  }
+
+  setTimeout(()=>{
+    // Clear cells
+    group.forEach(([gr,gc])=> grid[gr][gc] = -1);
+    // Drop + fill
+    dropAndFill();
+    render();
+    // Check for valid moves
+    if(!hasValidMoves()){
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('gameover').classList.add('show');
+    }
+    locked = false;
+    document.getElementById('hint-badge').classList.remove('show');
+  },300);
+}
+
+function findGroup(r,c,type){
+  const visited = new Set();
+  const group = [];
+  const stack = [[r,c]];
+  while(stack.length){
+    const [cr,cc] = stack.pop();
+    const key = cr+','+cc;
+    if(visited.has(key)) continue;
+    visited.add(key);
+    if(cr<0||cr>=ROWS||cc<0||cc>=COLS) continue;
+    if(grid[cr][cc]!==type) continue;
+    group.push([cr,cc]);
+    stack.push([cr-1,cc],[cr+1,cc],[cr,cc-1],[cr,cc+1]);
+  }
+  return group;
+}
+
+function hasValidMoves(){
+  for(let r=0;r<ROWS;r++)
+    for(let c=0;c<COLS;c++)
+      if(grid[r][c]!==-1 && findGroup(r,c,grid[r][c]).length>=2) return true;
+  return false;
+}
+
+function ensureValidMoves(){
+  if(hasValidMoves()) return;
+  // Respawn some cells
+  for(let i=0;i<8;i++){
+    const r=rand(ROWS), c=rand(COLS);
+    grid[r][c] = rand(TYPES);
+  }
+  ensureValidMoves(); // recurse until valid
+}
+
+function dropAndFill(){
+  for(let c=0;c<COLS;c++){
+    const col=[];
+    for(let r=ROWS-1;r>=0;r--) if(grid[r][c]!==-1) col.push(grid[r][c]);
+    while(col.length<ROWS) col.unshift(rand(TYPES));
+    for(let r=0;r<ROWS;r++) grid[r][c]=col[ROWS-1-r];
+  }
+}
+
+function showHint(){
+  if(locked) return;
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      if(grid[r][c]===-1) continue;
+      const group = findGroup(r,c,grid[r][c]);
+      if(group.length >= 2){
+        group.forEach(([gr,gc])=>{
+          const el = getCell(gr,gc);
+          el.classList.add('highlight');
+        });
+        document.getElementById('hint-badge').classList.add('show');
+        setTimeout(()=>{
+          group.forEach(([gr,gc])=> getCell(gr,gc).classList.remove('highlight'));
+          document.getElementById('hint-badge').classList.remove('show');
+        },1500);
+        return;
+      }
+    }
+  }
+}
+
+function showCombo(group, count){
+  const comboText = ['Nice!','Great!','Amazing!','Brilliant!','Perfect!'];
+  const texts = ['连击 x2','连击 x3','连击 x4','连击 x5','MAX!'];
+  const [r,c] = group[Math.floor(group.length/2)];
+  const el = document.createElement('div');
+  el.className = 'combo';
+  el.textContent = texts[Math.min(count-2,4)] + ' ' + (count>=3 ? comboText[Math.min(count-3,4)] : '');
+  el.style.left = (c/COLS*100)+'%';
+  el.style.top = (r/ROWS*100)+'%';
+  document.querySelector('.grid-wrap').appendChild(el);
+  setTimeout(()=>el.remove(),700);
+}
+
+function getCell(r,c){
+  return document.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
+
+// Reset combo on long pause (4s after last tap)
+let comboResetTimer;
+const origTap = tapCell;
+tapCell = function(r,c){
+  clearTimeout(comboResetTimer);
+  origTap(r,c);
+  if(!locked) {
+    comboResetTimer = setTimeout(()=>{ comboCount = 0; }, 4000);
+  }
+};
+
+initGame();
+</script>
+</body>
+</html>
