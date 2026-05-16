@@ -420,6 +420,30 @@ footer a:hover{text-decoration:underline}
 @media(min-width:721px)and (max-width:1024px){
   .cards-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* ── Desktop ── */
+@media(min-width:1025px){
+  .container{max-width:1200px}
+  .hero{padding:110px 0 64px}
+  .hero p{font-size:17px;max-width:620px}
+  .cards-grid{gap:20px}
+  .card{padding:26px}
+  .card-name{font-size:18px}
+  .card-desc{font-size:13.5px;line-height:1.7}
+  .stat-card{padding:20px 32px;min-width:120px}
+  .stat-card .num{font-size:26px}
+  .section-header h2{font-size:22px}
+  footer{padding:40px 0;margin-top:40px}
+  .footer-inner{font-size:13px}
+  .nav-links{font-size:14px;gap:28px}
+  .nav-links a{position:relative}
+  .nav-links a::after{
+    content:'';position:absolute;bottom:-4px;left:0;right:0;
+    height:1.5px;background:var(--accent);border-radius:1px;
+    transform:scaleX(0);transition:transform .2s}
+  .nav-links a:hover::after{transform:scaleX(1)}
+}
+
 </style>
 </head>
 <body>
