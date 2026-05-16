@@ -258,7 +258,7 @@ nav{
 /* ── Cards Grid ── */
 .cards-grid{
   display:grid;
-  grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+  grid-template-columns:repeat(3,1fr);
   gap:16px;
   margin-bottom:60px;
 }
@@ -328,11 +328,14 @@ nav{
   font-size:17px;
   font-weight:700;
   letter-spacing:-.3px;
+  word-break:break-word;
 }
 .card-desc{
   font-size:13px;
   color:var(--muted);
   line-height:1.65;
+  word-break:break-word;
+  overflow-wrap:break-word;
 }
 
 .card-tags{
@@ -404,7 +407,7 @@ footer a:hover{text-decoration:underline}
 
 /* ── Mobile ── */
 @media(max-width:720px){
-  .container{padding:0 16px}
+  .container{padding:0 12px}
   nav{padding:16px 0}
   .nav-links{display:none}
   .hero{padding:48px 0 32px}
@@ -412,22 +415,21 @@ footer a:hover{text-decoration:underline}
   .stats-row{gap:6px;margin-bottom:32px}
   .stat-card{padding:12px 16px;min-width:80px}
   .stat-card .num{font-size:20px}
-  .cards-grid{grid-template-columns:1fr;gap:12px}
+  .cards-grid{grid-template-columns:1fr;gap:10px}
   .card{padding:20px 16px}
   .footer-inner{flex-direction:column;text-align:center}
 }
 
 @media(min-width:721px)and (max-width:1024px){
-  .cards-grid{grid-template-columns:repeat(2,1fr)}
+  .cards-grid{grid-template-columns:repeat(2,1fr);gap:14px}
 }
 
 /* ── Desktop ── */
 @media(min-width:1025px){
   .container{max-width:1200px}
-  .hero{padding:110px 0 64px}
+  .hero{padding:60px 0 40px}
   .hero p{font-size:17px;max-width:620px}
   .cards-grid{gap:20px}
-  .card{padding:26px}
   .card-name{font-size:18px}
   .card-desc{font-size:13.5px;line-height:1.7}
   .stat-card{padding:20px 32px;min-width:120px}
