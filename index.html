@@ -2,117 +2,625 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5">
 <title>Agent 项目文档中心</title>
+<meta name="description" content="Agent 项目文档中心 — 产品定义说明书 · 交互式 DEMO · GitHub 仓库 · 跨框架 Agent 工具链">
+<meta name="theme-color" content="#070b14">
+
+<!-- Inter font -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
 <style>
+/* ── Reset & Variables ── */
 :root{
-  --bg:#090d14; --panel:#111827; --panel2:#161f30;
-  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
-  --accent:#4dd0e1; --pass:#4ade80; --purple:#a78bfa;
+  --bg:#070b14;
+  --surface:#0f1420;
+  --surface2:#161c2e;
+  --surface3:#1c2340;
+  --border:rgba(148,200,255,.08);
+  --border-hover:rgba(148,200,255,.2);
+  --text:#e2e8f0;
+  --muted:#7888a8;
+  --accent:#4dd0e1;
+  --accent-dim:rgba(77,208,225,.15);
+  --purple:#a78bfa;
+  --purple-dim:rgba(167,139,250,.12);
+  --green:#4ade80;
+  --amber:#fbbf24;
+  --red:#f87171;
+  --radius:16px;
+  --radius-sm:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
 body{
-  font-family:'Inter',-apple-system,sans-serif;
-  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.04) 0%,transparent 40%),
-             radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.04) 0%,transparent 40%),
-             var(--bg);
-  color:var(--text);font-size:14px;line-height:1.7;min-height:100vh;
+  font-family:'Inter','-apple-system','BlinkMacSystemFont','Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
 }
-.container{max-width:1000px;margin:0 auto;padding:40px 24px}
-header{text-align:center;padding:60px 0 40px}
-header h1{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
-header h1 span{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-header p{color:var(--muted);font-size:15px;max-width:500px;margin:0 auto}
-.stats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:24px}
-.stat{text-align:center}
-.stat .num{font-size:28px;font-weight:700;color:var(--accent)}
-.stat .lbl{font-size:11px;color:var(--muted)}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:32px}
+
+/* ── Background Effects ── */
+.bg-glow{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+}
+.bg-glow::before{
+  content:'';
+  position:absolute;
+  top:-30%;
+  left:-10%;
+  width:60%;
+  height:80%;
+  background:radial-gradient(ellipse, rgba(77,208,225,.06) 0%,transparent 70%);
+}
+.bg-glow::after{
+  content:'';
+  position:absolute;
+  bottom:-20%;
+  right:-10%;
+  width:50%;
+  height:70%;
+  background:radial-gradient(ellipse, rgba(167,139,250,.05) 0%,transparent 70%);
+}
+
+/* ── Grid Lines ── */
+.grid-lines{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.03;
+  background-image:
+    linear-gradient(rgba(255,255,255,.1) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.1) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ── Container ── */
+.container{
+  position:relative;
+  z-index:1;
+  max-width:1120px;
+  margin:0 auto;
+  padding:0 24px;
+}
+
+/* ── Nav ── */
+nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 0;
+  border-bottom:1px solid var(--border);
+}
+.nav-brand{
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+.nav-brand span{
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.nav-links{
+  display:flex;
+  gap:20px;
+  font-size:13px;
+}
+.nav-links a{
+  color:var(--muted);
+  text-decoration:none;
+  transition:color .2s;
+}
+.nav-links a:hover{color:var(--text)}
+
+/* ── Hero ── */
+.hero{
+  padding:80px 0 56px;
+  text-align:center;
+}
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--accent);
+  background:var(--accent-dim);
+  padding:5px 14px;
+  border-radius:20px;
+  margin-bottom:24px;
+  letter-spacing:.3px;
+}
+.hero-badge .dot{
+  width:6px;height:6px;
+  background:var(--accent);
+  border-radius:50%;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1}
+  50%{opacity:.3}
+}
+.hero h1{
+  font-size:clamp(32px,5vw,56px);
+  font-weight:900;
+  line-height:1.15;
+  letter-spacing:-1.5px;
+  margin-bottom:16px;
+}
+.hero h1 .gradient{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--purple) 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero p{
+  font-size:clamp(14px,2vw,17px);
+  color:var(--muted);
+  max-width:580px;
+  margin:0 auto 32px;
+  line-height:1.7;
+}
+.hero-actions{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.hero-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 28px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+  transition:all .2s;
+  cursor:pointer;
+}
+.hero-btn-primary{
+  background:linear-gradient(135deg,var(--accent),#26b6c8);
+  color:#0a0f1e;
+}
+.hero-btn-primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(77,208,225,.25);
+}
+.hero-btn-secondary{
+  background:var(--surface2);
+  color:var(--text);
+  border:1px solid var(--border);
+}
+.hero-btn-secondary:hover{
+  border-color:var(--border-hover);
+  transform:translateY(-2px);
+}
+
+/* ── Stats ── */
+.stats-row{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:8px;
+  margin-bottom:48px;
+}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px 28px;
+  text-align:center;
+  min-width:100px;
+}
+.stat-card .num{
+  font-size:24px;
+  font-weight:800;
+  color:var(--accent);
+  line-height:1.2;
+}
+.stat-card .lbl{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:2px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+/* ── Section Header ── */
+.section-header{
+  margin-bottom:28px;
+}
+.section-header h2{
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:-.3px;
+  margin-bottom:4px;
+}
+.section-header p{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* ── Cards Grid ── */
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(300px,1fr));
+  gap:16px;
+  margin-bottom:60px;
+}
+
 .card{
-  background:var(--panel);border:1px solid var(--line);border-radius:12px;
-  padding:24px;transition:all .2s;text-decoration:none;color:inherit;
-  display:flex;flex-direction:column;
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:28px 24px 24px;
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  transition:all .3s ease;
+  overflow:hidden;
 }
-.card:hover{border-color:rgba(148,200,255,.2);transform:translateY(-2px)}
-.card .icon{font-size:28px;margin-bottom:10px}
-.card .name{font-size:16px;font-weight:700;margin-bottom:4px}
-.card .desc{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
-.card .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
-.card .links a{
-  font-size:11px;color:var(--accent);background:rgba(77,208,225,.08);
-  padding:4px 10px;border-radius:5px;text-decoration:none;transition:all .1s;
+.card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--card-accent,var(--accent)),transparent);
+  opacity:0;
+  transition:opacity .3s;
 }
-.card .links a:hover{background:rgba(77,208,225,.18)}
+.card:hover::before{opacity:1}
+.card:hover{
+  border-color:var(--border-hover);
+  transform:translateY(-4px);
+  box-shadow:0 12px 40px rgba(0,0,0,.3);
+}
+
+.card .card-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.card-icon{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.card-icon.cost{background:rgba(77,208,225,.12)}
+.card-icon.registry{background:rgba(167,139,250,.12)}
+.card-icon.datadog{background:rgba(74,222,128,.12)}
+.card-icon.surface{background:rgba(251,191,36,.12)}
+.card-icon.scanner{background:rgba(248,113,113,.12)}
+
+.card-status{
+  font-size:11px;
+  font-weight:600;
+  padding:3px 10px;
+  border-radius:6px;
+  white-space:nowrap;
+}
+.card-status.active{background:rgba(74,222,128,.12);color:var(--green)}
+.card-status.waiting{background:rgba(251,191,36,.12);color:var(--amber)}
+.card-status.early{background:rgba(148,163,184,.12);color:var(--muted)}
+
+.card-name{
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:-.3px;
+  margin-bottom:8px;
+}
+.card-desc{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.65;
+  margin-bottom:16px;
+  flex:1;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+
+.card-meta{
+  display:flex;
+  gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.card-meta-item{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  font-size:11px;
+  color:var(--muted);
+}
+.card-meta-item svg{width:14px;height:14px;opacity:.6}
+
+.card-links{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.card-link{
+  font-size:12px;
+  font-weight:500;
+  color:var(--accent);
+  background:var(--accent-dim);
+  padding:5px 12px;
+  border-radius:7px;
+  text-decoration:none;
+  transition:all .15s;
+}
+.card-link:hover{background:rgba(77,208,225,.22)}
+.card-link.gh{
+  color:var(--purple);
+  background:var(--purple-dim);
+}
+.card-link.gh:hover{background:rgba(167,139,250,.22)}
+
+/* ── Footer ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:32px 0;
+  margin-top:24px;
+}
+.footer-inner{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px;
+  color:var(--muted);
+  flex-wrap:wrap;
+  gap:12px;
+}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* ── Animations ── */
+.fade-in{
+  opacity:0;
+  transform:translateY(20px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.fade-in.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ── Mobile ── */
+@media(max-width:720px){
+  .container{padding:0 16px}
+  nav{padding:16px 0}
+  .nav-links{display:none}
+  .hero{padding:48px 0 32px}
+  .hero-badge{font-size:11px}
+  .stats-row{gap:6px;margin-bottom:32px}
+  .stat-card{padding:12px 16px;min-width:80px}
+  .stat-card .num{font-size:20px}
+  .cards-grid{grid-template-columns:1fr;gap:12px}
+  .card{padding:20px 16px}
+  .footer-inner{flex-direction:column;text-align:center}
+}
+
+@media(min-width:721px)and (max-width:1024px){
+  .cards-grid{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
 <body>
+
+<div class="bg-glow"></div>
+<div class="grid-lines"></div>
+
 <div class="container">
-  <header>
-    <h1>🦞 <span>Agent 项目文档中心</span></h1>
-    <p>产品定义说明书 · 交互式 DEMO · GitHub 仓库 · 跨框架 Agent 工具链</p>
-    <div class="stats">
-      <div class="stat"><div class="num">5</div><div class="lbl">项目</div></div>
-      <div class="stat"><div class="num">15</div><div class="lbl">文档页面</div></div>
-      <div class="stat"><div class="num">F5</div><div class="lbl">框架对比</div></div>
+  <!-- Nav -->
+  <nav>
+    <div class="nav-brand">🦞 <span>Agent Docs</span></div>
+    <div class="nav-links">
+      <a href="#projects">项目</a>
+      <a href="https://github.com/jasoneip01-pixel" target="_blank">GitHub</a>
+      <a href="https://jasoneip01-pixel.github.io/agent-docs/">首页</a>
     </div>
-  </header>
+  </nav>
 
-  <div class="cards">
-    <a class="card" href="projects/agent-cost-cli/">
-      <div class="icon">💰</div>
-      <div class="name">agent-cost-cli</div>
-      <div class="desc">Agent 推理成本追踪 CLI + MCP Server v0.2 — 8 工具 (文件监视/告警/会话状态) + CI/CD + 20+ 模型计费引擎</div>
-      <div class="links">
-        <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html">📄 产品定义</a>
-        <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank">GitHub</a>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge fade-in">
+      <span class="dot"></span>
+      v1.0 · 5 个项目 · 15 文档
+    </div>
+    <h1 class="fade-in">
+      Agent <span class="gradient">工具链文档中心</span>
+    </h1>
+    <p class="fade-in">
+      产品定义说明书 · 交互式 DEMO · 技术架构 · 竞争对比 · 路线图
+      <br>
+      跨框架 Agent 可观测性 · 供应链安全 · MCP 生态
+    </p>
+    <div class="hero-actions fade-in">
+      <a href="#projects" class="hero-btn hero-btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        浏览项目
+      </a>
+      <a href="https://github.com/jasoneip01-pixel" target="_blank" class="hero-btn hero-btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card fade-in"><div class="num">5</div><div class="lbl">项目</div></div>
+    <div class="stat-card fade-in"><div class="num">15</div><div class="lbl">文档页面</div></div>
+    <div class="stat-card fade-in"><div class="num">8</div><div class="lbl">MCP 工具</div></div>
+    <div class="stat-card fade-in"><div class="num">6</div><div class="lbl">框架对比</div></div>
+    <div class="stat-card fade-in"><div class="num">✅</div><div class="lbl">CI/CD</div></div>
+  </div>
+
+  <!-- Projects -->
+  <div class="section-header" id="projects">
+    <h2>📦 项目总览</h2>
+    <p>产品定义 · DEMO · GitHub 仓库 · 一条龙</p>
+  </div>
+
+  <div class="cards-grid">
+    <!-- agent-cost-cli -->
+    <a class="card fade-in" href="projects/agent-cost-cli/" style="--card-accent:#4dd0e1">
+      <div class="card-top">
+        <div class="card-icon cost">💰</div>
+        <span class="card-status active">Active</span>
+      </div>
+      <div class="card-name">agent-cost-cli</div>
+      <div class="card-desc">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎，MCP Registry 首个旗舰入驻</div>
+      <div class="card-meta">
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>v0.2</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>MCP Server</span>
+      </div>
+      <div class="card-links">
+        <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
+        <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
       </div>
     </a>
 
-    <a class="card" href="projects/mcp-registry/">
-      <div class="icon">📦</div>
-      <div class="name">MCP Registry</div>
-      <div class="desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，30 工具种子，每日采集 cron</div>
-      <div class="links">
-        <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html">📄 产品定义</a>
-        <a href="projects/mcp-registry/demos/mcp-registry-demo.html">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank">GitHub</a>
+    <!-- MCP Registry -->
+    <a class="card fade-in" href="projects/mcp-registry/" style="--card-accent:#a78bfa">
+      <div class="card-top">
+        <div class="card-icon registry">📦</div>
+        <span class="card-status active">Active</span>
+      </div>
+      <div class="card-name">MCP Registry</div>
+      <div class="card-desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI: search / list / install / publish</div>
+      <div class="card-meta">
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>31 tools</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Cron 采集</span>
+      </div>
+      <div class="card-links">
+        <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
+        <a href="projects/mcp-registry/demos/mcp-registry-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
       </div>
     </a>
 
-    <a class="card" href="projects/agent-datadog/">
-      <div class="icon">📊</div>
-      <div class="name">Agent Datadog</div>
-      <div class="desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流</div>
-      <div class="links">
-        <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html">📄 产品定义</a>
-        <a href="projects/agent-datadog/demos/agent-datadog-demo.html">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank">GitHub</a>
+    <!-- agent-datadog -->
+    <a class="card fade-in" href="projects/agent-datadog/" style="--card-accent:#4ade80">
+      <div class="card-top">
+        <div class="card-icon datadog">📊</div>
+        <span class="card-status active">Active</span>
+      </div>
+      <div class="card-name">Agent Datadog</div>
+      <div class="card-desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
+      <div class="card-meta">
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>AgentWatch Fork</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>FastAPI</span>
+      </div>
+      <div class="card-links">
+        <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
+        <a href="projects/agent-datadog/demos/agent-datadog-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
       </div>
     </a>
 
-    <a class="card" href="projects/skill-surface-diff/">
-      <div class="icon">🔍</div>
-      <div class="name">Skill Surface Diff</div>
-      <div class="desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化</div>
-      <div class="links">
-        <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html">📄 产品定义</a>
-        <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank">GitHub</a>
+    <!-- skill-surface-diff -->
+    <a class="card fade-in" href="projects/skill-surface-diff/" style="--card-accent:#fbbf24">
+      <div class="card-top">
+        <div class="card-icon surface">🔍</div>
+        <span class="card-status waiting">Waiting</span>
+      </div>
+      <div class="card-name">Skill Surface Diff</div>
+      <div class="card-desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
+      <div class="card-meta">
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>v0.1</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Scanner</span>
+      </div>
+      <div class="card-links">
+        <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
+        <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
       </div>
     </a>
 
-    <a class="card" href="projects/skill-scanner/">
-      <div class="icon">🛡️</div>
-      <div class="name">Skill Scanner</div>
-      <div class="desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测</div>
-      <div class="links">
-        <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html">📄 产品定义</a>
-        <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank">GitHub</a>
+    <!-- skill-scanner -->
+    <a class="card fade-in" href="projects/skill-scanner/" style="--card-accent:#f87171">
+      <div class="card-top">
+        <div class="card-icon scanner">🛡️</div>
+        <span class="card-status waiting">Waiting</span>
+      </div>
+      <div class="card-name">Skill Scanner</div>
+      <div class="card-desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。CI/CD + PyPI 全套就绪，等待安全事件引爆</div>
+      <div class="card-meta">
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>PyPI</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
+        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security</span>
+      </div>
+      <div class="card-links">
+        <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
+        <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
       </div>
     </a>
   </div>
 </div>
+
+<!-- Footer -->
+<footer>
+  <div class="container footer-inner">
+    <span>🦞 Agent 项目文档中心 · MIT License</span>
+    <span>
+      <a href="https://github.com/jasoneip01-pixel/agent-docs" target="_blank">GitHub</a>
+      ·
+      <a href="https://jasoneip01-pixel.github.io/agent-docs/">首页</a>
+      ·
+      Made with intent
+    </span>
+  </div>
+</footer>
+
+<!-- IntersectionObserver animations -->
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  if(!window.IntersectionObserver) return
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.style.transitionDelay = Math.random()*.15+'s'
+        e.target.classList.add('visible')
+        observer.unobserve(e.target)
+      }
+    })
+  },{threshold:.08})
+
+  document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el))
+})
+</script>
+
 </body>
 </html>
