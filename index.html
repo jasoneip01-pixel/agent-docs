@@ -517,105 +517,134 @@ footer a:hover{text-decoration:underline}
     <p>产品定义 · DEMO · GitHub 仓库 · 一条龙</p>
   </div>
 
-  <div class="cards-grid">
-    <!-- agent-cost-cli -->
-    <a class="card fade-in" href="projects/agent-cost-cli/" style="--card-accent:#4dd0e1">
-      <div class="card-top">
-        <div class="card-icon cost">💰</div>
-        <span class="card-status active">Active</span>
-      </div>
-      <div class="card-name">agent-cost-cli</div>
-      <div class="card-desc">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎，MCP Registry 首个旗舰入驻</div>
-      <div class="card-tags">
-        <span class="card-tag">v0.2</span>
-        <span class="card-tag">CI/CD ✅</span>
-        <span class="card-tag">MCP Server</span>
-      </div>
-      <div class="card-links">
-        <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
-        <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
-      </div>
-    </a>
+  <!-- ── agent-cost-cli ── -->
+  <div class="project-block cost">
+    <div class="project-header">
+      <div class="picon">💰</div>
+      <span class="pname">agent-cost-cli</span>
+      <span class="pstatus active">Active</span>
+    </div>
+    <div class="project-docs-grid">
+      <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="doc-card fade-in">
+        <div class="doci">📄 产品定义</div>
+        <div class="docd">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎</div>
+        <div class="doclabel def">产品定义说明书 →</div>
+      </a>
+      <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html" class="doc-card fade-in">
+        <div class="doci">🎮 DEMO</div>
+        <div class="docd">交互式演示 — 终端模拟、成本仪表盘实时渲染。体验跨框架成本追踪的实际操作流程</div>
+        <div class="doclabel demo">交互式 DEMO →</div>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank" class="doc-card fade-in">
+        <div class="doci">🐙 GitHub 仓库</div>
+        <div class="docd">包含 Python CLI、Rust 骨架、MCP Server v0.2、GitHub Actions CI。旗舰级 MCP 工具</div>
+        <div class="doclabel gh">github.com/jasoneip01-pixel/agent-cost-cli →</div>
+      </a>
+    </div>
+  </div>
 
-    <!-- MCP Registry -->
-    <a class="card fade-in" href="projects/mcp-registry/" style="--card-accent:#a78bfa">
-      <div class="card-top">
-        <div class="card-icon registry">📦</div>
-        <span class="card-status active">Active</span>
-      </div>
-      <div class="card-name">MCP Registry</div>
-      <div class="card-desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI: search / list / install / publish</div>
-      <div class="card-tags">
-        <span class="card-tag">31 tools</span>
-        <span class="card-tag">CI/CD ✅</span>
-        <span class="card-tag">Cron 采集</span>
-      </div>
-      <div class="card-links">
-        <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
-        <a href="projects/mcp-registry/demos/mcp-registry-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
-      </div>
-    </a>
+  <!-- ── MCP Registry ── -->
+  <div class="project-block registry">
+    <div class="project-header">
+      <div class="picon">📦</div>
+      <span class="pname">MCP Registry</span>
+      <span class="pstatus active">Active</span>
+    </div>
+    <div class="project-docs-grid">
+      <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="doc-card fade-in">
+        <div class="doci">📄 产品定义</div>
+        <div class="docd">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI 含 search / list / install / publish</div>
+        <div class="doclabel def">产品定义说明书 →</div>
+      </a>
+      <a href="projects/mcp-registry/demos/mcp-registry-demo.html" class="doc-card fade-in">
+        <div class="doci">🎮 DEMO</div>
+        <div class="docd">交互式演示 — Registry 浏览器、CLI 命令仿真、每日采集数据流可视化</div>
+        <div class="doclabel demo">交互式 DEMO →</div>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank" class="doc-card fade-in">
+        <div class="doci">🐙 GitHub 仓库</div>
+        <div class="docd">包含 SPEC.md、CLI、registry/index.json、CI/CD 索引校验、每日采集 cron</div>
+        <div class="doclabel gh">github.com/jasoneip01-pixel/mcp-registry →</div>
+      </a>
+    </div>
+  </div>
 
-    <!-- agent-datadog -->
-    <a class="card fade-in" href="projects/agent-datadog/" style="--card-accent:#4ade80">
-      <div class="card-top">
-        <div class="card-icon datadog">📊</div>
-        <span class="card-status active">Active</span>
-      </div>
-      <div class="card-name">Agent Datadog</div>
-      <div class="card-desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
-      <div class="card-tags">
-        <span class="card-tag">AgentWatch Fork</span>
-        <span class="card-tag">CI/CD ✅</span>
-        <span class="card-tag">FastAPI</span>
-      </div>
-      <div class="card-links">
-        <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
-        <a href="projects/agent-datadog/demos/agent-datadog-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
-      </div>
-    </a>
+  <!-- ── Agent Datadog ── -->
+  <div class="project-block datadog">
+    <div class="project-header">
+      <div class="picon">📊</div>
+      <span class="pname">Agent Datadog</span>
+      <span class="pstatus active">Active</span>
+    </div>
+    <div class="project-docs-grid">
+      <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="doc-card fade-in">
+        <div class="doci">📄 产品定义</div>
+        <div class="docd">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
+        <div class="doclabel def">产品定义说明书 →</div>
+      </a>
+      <a href="projects/agent-datadog/demos/agent-datadog-demo.html" class="doc-card fade-in">
+        <div class="doci">🎮 DEMO</div>
+        <div class="docd">交互式演示 — 实时成本仪表盘、Agent 拓扑可视化、框架对比图表</div>
+        <div class="doclabel demo">交互式 DEMO →</div>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank" class="doc-card fade-in">
+        <div class="doci">🐙 GitHub 仓库</div>
+        <div class="docd">AgentWatch Fork + FastAPI 计费引擎、GitHub Actions CI。5 框架定价数据层</div>
+        <div class="doclabel gh">github.com/jasoneip01-pixel/agent-datadog →</div>
+      </a>
+    </div>
+  </div>
 
-    <!-- skill-surface-diff -->
-    <a class="card fade-in" href="projects/skill-surface-diff/" style="--card-accent:#fbbf24">
-      <div class="card-top">
-        <div class="card-icon surface">🔍</div>
-        <span class="card-status waiting">Waiting</span>
-      </div>
-      <div class="card-name">Skill Surface Diff</div>
-      <div class="card-desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
-      <div class="card-tags">
-        <span class="card-tag">v0.1</span>
-        <span class="card-tag">Scanner</span>
-      </div>
-      <div class="card-links">
-        <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
-        <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
-      </div>
-    </a>
+  <!-- ── Skill Surface Diff ── -->
+  <div class="project-block surface">
+    <div class="project-header">
+      <div class="picon">🔍</div>
+      <span class="pname">Skill Surface Diff</span>
+      <span class="pstatus waiting">Waiting</span>
+    </div>
+    <div class="project-docs-grid">
+      <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="doc-card fade-in">
+        <div class="doci">📄 产品定义</div>
+        <div class="docd">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
+        <div class="doclabel def">产品定义说明书 →</div>
+      </a>
+      <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html" class="doc-card fade-in">
+        <div class="doci">🎮 DEMO</div>
+        <div class="docd">交互式演示 — 差异对比视图、权限变更高亮、技能面可视化</div>
+        <div class="doclabel demo">交互式 DEMO →</div>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank" class="doc-card fade-in">
+        <div class="doci">🐙 GitHub 仓库</div>
+        <div class="docd">包含 CLI + Scanner Engine、差异分析核心、AST 级技能面解析</div>
+        <div class="doclabel gh">github.com/jasoneip01-pixel/skill-surface-diff →</div>
+      </a>
+    </div>
+  </div>
 
-    <!-- skill-scanner -->
-    <a class="card fade-in" href="projects/skill-scanner/" style="--card-accent:#f87171">
-      <div class="card-top">
-        <div class="card-icon scanner">🛡️</div>
-        <span class="card-status waiting">Waiting</span>
-      </div>
-      <div class="card-name">Skill Scanner</div>
-      <div class="card-desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。CI/CD + PyPI 全套就绪，等待安全事件引爆</div>
-      <div class="card-tags">
-        <span class="card-tag">PyPI</span>
-        <span class="card-tag">CI/CD ✅</span>
-        <span class="card-tag">Security</span>
-      </div>
-      <div class="card-links">
-        <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
-        <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html" class="card-link" onclick="event.stopPropagation()">🎮 DEMO</a>
-        <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank" class="card-link gh" onclick="event.stopPropagation()">GitHub</a>
-      </div>
-    </a>
+  <!-- ── Skill Scanner ── -->
+  <div class="project-block scanner">
+    <div class="project-header">
+      <div class="picon">🛡️</div>
+      <span class="pname">Skill Scanner</span>
+      <span class="pstatus waiting">Waiting</span>
+    </div>
+    <div class="project-docs-grid">
+      <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="doc-card fade-in">
+        <div class="doci">📄 产品定义</div>
+        <div class="docd">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。PyPI + CI/CD 全套就绪</div>
+        <div class="doclabel def">产品定义说明书 →</div>
+      </a>
+      <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html" class="doc-card fade-in">
+        <div class="doci">🎮 DEMO</div>
+        <div class="docd">交互式演示 — 安全扫描报告、风险评分、供应链可视化</div>
+        <div class="doclabel demo">交互式 DEMO →</div>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank" class="doc-card fade-in">
+        <div class="doci">🐙 GitHub 仓库</div>
+        <div class="docd">PyPI 包、GitHub Actions CI、全套安全扫描规则引擎就绪</div>
+        <div class="doclabel gh">github.com/jasoneip01-pixel/skill-scanner →</div>
+      </a>
+    </div>
   </div>
 </div>
 
