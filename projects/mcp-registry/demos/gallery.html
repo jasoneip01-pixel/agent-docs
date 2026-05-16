@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5">
+<title>MCP Gallery — 精选 MCP 工具集市</title>
+<meta name="description" content="一个精心挑选的 MCP 工具画廊。每一件工具都经过人的眼睛看过、用过、品味过。">
+<style>
+:root{
+  --bg:#080c14;
+  --surface:#0f1622;
+  --surface2:#172036;
+  --surface3:#1e2a45;
+  --border:rgba(148,200,255,.07);
+  --border-hover:rgba(148,200,255,.18);
+  --text:#e2e8f0;
+  --muted:#7888a8;
+  --accent:#4dd0e1;
+  --accent-dim:rgba(77,208,225,.08);
+  --purple:#a78bfa;
+  --purple-dim:rgba(167,139,250,.08);
+  --green:#4ade80;
+  --amber:#fbbf24;
+  --red:#f87171;
+  --radius:14px;
+  --radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','-apple-system','BlinkMacSystemFont','Segoe UI',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(77,208,225,.25);color:#fff}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 0;border-bottom:1px solid var(--border);margin-bottom:48px;}
+.brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;letter-spacing:-.3px;}
+.brand-icon{width:36px;height:36px;border-radius:10px;background:var(--accent-dim);display:flex;align-items:center;justify-content:center;font-size:18px}
+.brand span{color:var(--muted);font-weight:400;font-size:13px}
+nav a{font-size:13px;color:var(--muted);text-decoration:none;margin-left:24px;transition:color .15s;}
+nav a:hover{color:var(--text)}
+
+/* Hero */
+.hero{text-align:center;padding:40px 0 56px;}
+.hero h1{font-size:clamp(28px,4.5vw,44px);font-weight:900;letter-spacing:-1.2px;line-height:1.15;margin-bottom:12px;}
+.hero h1 .glow{background:linear-gradient(135deg,#4dd0e1 0%,#a78bfa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:15px;color:var(--muted);max-width:500px;margin:0 auto 32px;line-height:1.7}
+.hero-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:4px 14px;border-radius:20px;margin-bottom:20px;letter-spacing:.2px;}
+
+/* Toolbar */
+.toolbar{display:flex;gap:12px;margin-bottom:40px;flex-wrap:wrap;align-items:center;justify-content:center;}
+.search-wrap{position:relative;flex:1;max-width:380px;min-width:200px;}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:13px;outline:none;transition:all .2s;font-family:inherit;}
+.search-wrap input:focus{border-color:var(--accent);background:var(--surface2);box-shadow:0 0 0 3px rgba(77,208,225,.1)}
+.search-wrap input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{font-size:12px;font-weight:500;padding:7px 16px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.filter-btn:hover{border-color:var(--border-hover);color:var(--text)}
+.filter-btn.active{background:var(--accent-dim);border-color:rgba(77,208,225,.25);color:var(--accent)}
+
+/* Picks */
+.picks-section{margin-bottom:48px}
+.picks-header{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.picks-header h2{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.picks-header .tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:rgba(251,191,36,.12);color:var(--amber);}
+.picks-grid,.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:60px}
+
+/* Cards */
+.tool-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;gap:8px;}
+.tool-card:hover{border-color:var(--border-hover);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.3);}
+.tool-card.pick{border-color:rgba(251,191,36,.15);background:linear-gradient(135deg,var(--surface),rgba(251,191,36,.03));}
+.tool-card.pick .pick-badge{position:absolute;top:-1px;right:20px;font-size:10px;font-weight:600;padding:2px 10px;border-radius:0 0 6px 6px;background:rgba(251,191,36,.15);color:var(--amber);}
+.tool-card .c-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.tool-card .c-name{font-size:14px;font-weight:700;letter-spacing:-.2px;word-break:break-word;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tool-card .c-cat{font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;white-space:nowrap;background:var(--surface3);color:var(--muted);flex-shrink:0;}
+.tool-card .c-desc{font-size:12px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.tool-card .c-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:6px;}
+.c-version{font-size:10px;color:var(--muted)}
+.c-tags{display:flex;gap:4px;flex-wrap:wrap}
+.c-tag{font-size:10px;padding:1px 6px;border-radius:3px;background:var(--surface2);color:var(--muted)}
+.c-arrow{font-size:12px;color:var(--border-hover);transition:all .15s}
+.tool-card:hover .c-arrow{color:var(--accent);transform:translateX(2px)}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface2);border:1px solid var(--border-hover);border-radius:var(--radius);max-width:560px;width:100%;max-height:80vh;overflow-y:auto;padding:28px;position:relative;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.m-close{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:6px;border:none;background:var(--surface3);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.m-close:hover{background:var(--surface);color:var(--text)}
+.modal .m-name{font-size:20px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
+.modal .m-owner{font-size:13px;color:var(--muted);margin-bottom:16px}
+.modal .m-desc{font-size:14px;line-height:1.7;color:var(--text);margin-bottom:20px}
+.modal .m-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.modal .m-meta-item{font-size:12px;color:var(--muted)}
+.modal .m-meta-item strong{color:var(--text);font-weight:600}
+.modal .m-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.modal .m-tag{font-size:11px;padding:3px 10px;border-radius:5px;background:var(--surface3);color:var(--muted)}
+.modal .m-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;padding:8px 18px;border-radius:8px;background:var(--accent-dim);transition:all .15s;}
+.modal .m-link:hover{background:rgba(77,208,225,.15)}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:28px 0;text-align:center;font-size:13px;color:var(--muted);}
+footer a{color:var(--accent);text-decoration:none}
+
+.count-badge{font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-dim);padding:3px 10px;border-radius:6px;margin-left:8px;vertical-align:middle}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;grid-column:1/-1}
+
+@media(max-width:900px){.picks-grid,.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){
+  .container{padding:0 16px}
+  .picks-grid,.grid{grid-template-columns:1fr;gap:12px}
+  header{flex-direction:column;gap:12px;padding:16px 0;margin-bottom:32px}
+  .hero{padding:24px 0 32px}
+  .toolbar{flex-direction:column}
+  .search-wrap{max-width:100%}
+  .filters{justify-content:center}
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="brand-icon">&#127928;</div>
+      MCP Gallery <span>· 精选工具集市</span>
+    </div>
+    <nav>
+      <a href="#tools">所有工具</a>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank">GitHub</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-badge">&#10026; 收录 31 件工具</div>
+    <h1>MCP 工具的 <span class="glow">精选画廊</span></h1>
+    <p>每一件工具都经过人的眼睛看过、用过、品味过。<br>不是搜索引擎，是态度。</p>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input type="text" id="search" placeholder="搜索工具名称、描述..." oninput="filterTools()">
+      </div>
+      <div class="filters" id="filters"></div>
+    </div>
+  </section>
+
+  <section class="picks-section">
+    <div class="picks-header">
+      <h2>&#10022; 编辑精选</h2>
+      <span class="tag">本周推荐</span>
+    </div>
+    <div class="picks-grid" id="picks-grid"></div>
+  </section>
+
+  <section class="tools-section" id="tools">
+    <h2>所有工具 <span class="count-badge" id="count-badge">31</span></h2>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+
+<footer>
+  <div class="container">
+    MCP Gallery · 精选 MCP 工具集市 · <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank">GitHub</a> · 每周更新
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+const MCP_TOOLS = [
+  {
+    "name": "agent-cost",
+    "version": "0.1.0",
+    "owner": "jasoneip01-pixel",
+    "description": "Agent \u63a8\u7406\u6210\u672c\u8ffd\u8e2a MCP Server \u2014 \u89e3\u6790 JSONL \u65e5\u5fd7/\u5bf9\u6bd4\u6a21\u578b/\u4f30\u7b97\u6210\u672c/\u63a8\u8350\u6700\u4f18\u6a21\u578b\u3002\u652f\u6301 6 \u6846\u67b6 20+ \u6a21\u578b\u5b9a\u4ef7\u8868\u3002MCP Registry \u9996\u4e2a\u65d7\u8230\u5165\u9a7b\u5de5\u5177",
+    "category": "developer",
+    "tags": [
+      "cost",
+      "observability",
+      "agent"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/jasoneip01-pixel/agent-cost-cli/tree/main/mcp-server",
+    "created": "2026-05-16T06:00:00Z"
+  },
+  {
+    "name": "aashari-mcp-server-atlassian-bitbucket",
+    "version": "3.1.0",
+    "owner": "aashari",
+    "description": "Node.js/TypeScript MCP server for Atlassian Bitbucket. Enables AI systems (LLMs) to interact with workspaces, repositories, and pull requests via tool",
+    "category": "automation",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@aashari/mcp-server-atlassian-bitbucket",
+    "created": ""
+  },
+  {
+    "name": "aashari-mcp-server-atlassian-confluence",
+    "version": "3.3.0",
+    "owner": "aashari",
+    "description": "Node.js/TypeScript MCP server for Atlassian Confluence. Provides tools enabling AI systems (LLMs) to list/get spaces & pages (content formatted as Mar",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@aashari/mcp-server-atlassian-confluence",
+    "created": ""
+  },
+  {
+    "name": "aashari-mcp-server-atlassian-jira",
+    "version": "3.3.0",
+    "owner": "aashari",
+    "description": "Node.js/TypeScript MCP server for Atlassian Jira. Equips AI systems (LLMs) with tools to list/get projects, search/get issues (using JQL/ID), and view",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@aashari/mcp-server-atlassian-jira",
+    "created": ""
+  },
+  {
+    "name": "agent-cost-tracker",
+    "version": "0.1.0",
+    "owner": "mcp",
+    "description": "\u8ffd\u8e2a Agent \u63a8\u7406token\u7528\u91cf\u548c\u6210\u672c\uff0c\u652f\u6301 OpenAI/Anthropic/LangChain/CrewAI",
+    "category": "developer",
+    "tags": [
+      "cost",
+      "observability",
+      "agent"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/mcp/agent-cost-tracker",
+    "created": ""
+  },
+  {
+    "name": "ai-agent-dev-week4-mcp-server",
+    "version": "0.1.0",
+    "owner": "jmjmlang",
+    "description": "Week 4 deliverable: MCP server exposing the Week 3 Person database to AI agents (Next.js + Prisma + @modelcontextprotocol/sdk)",
+    "category": "data",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://github.com/jmjmlang/ai-agent-dev-week4-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "benborla29-mcp-server-mysql",
+    "version": "2.0.8",
+    "owner": "benborla29",
+    "description": "MCP server for interacting with MySQL databases with write operations support",
+    "category": "data",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@benborla29/mcp-server-mysql",
+    "created": ""
+  },
+  {
+    "name": "boomi-mcp-server",
+    "version": "0.1.0",
+    "owner": "AshwathDAzur",
+    "description": "A [Model Context Protocol (MCP)](https://modelcontextprotocol.io) server that connects Claude AI directly to your **Boomi AtomSphere** account. It exp",
+    "category": "developer",
+    "tags": [
+      "boomi",
+      "claude",
+      "mcp-server"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/AshwathDAzur/Boomi-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "cachly-dev-mcp-server",
+    "version": "0.10.25",
+    "owner": "cachly-dev",
+    "description": "Give Claude a persistent memory that never forgets. cachly learns automatically from every session, bug fix & git commit \u2014 no manual calls needed. Arr",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@cachly-dev/mcp-server",
+    "created": ""
+  },
+  {
+    "name": "clinicaltrialsgov-mcp-server",
+    "version": "2.4.7",
+    "owner": "npm",
+    "description": "MCP server for the ClinicalTrials.gov v2 API. Search trials, retrieve study details and results, and match patients to eligible trials.",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/clinicaltrialsgov-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "cyanheads-git-mcp-server",
+    "version": "2.15.1",
+    "owner": "cyanheads",
+    "description": "A secure and scalable Git MCP server enabling AI agents to perform comprehensive Git version control operations via STDIO and Streamable HTTP.",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@cyanheads/git-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "cyanheads-pubmed-mcp-server",
+    "version": "2.6.11",
+    "owner": "cyanheads",
+    "description": "MCP server for PubMed/NCBI E-utilities integration. Search articles, fetch metadata and open-access full text (PMC + Unpaywall), generate citations, e",
+    "category": "data",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@cyanheads/pubmed-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "european-parliament-mcp-server",
+    "version": "1.3.6",
+    "owner": "npm",
+    "description": "Model Context Protocol server for European Parliament open data",
+    "category": "data",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/european-parliament-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "ga4-mcp-server",
+    "version": "0.1.0",
+    "owner": "spindle79",
+    "description": "Google Analytics 4 MCP server \u2014 exposes GA4 metrics to AI agents over @modelcontextprotocol/sdk and parallel REST endpoints, with daily/monthly time b",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://github.com/spindle79/ga4-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "hashlock-mcp-manifest",
+    "version": "0.1.0",
+    "owner": "Hashlock-Tech",
+    "description": "Public registry manifest for the Hashlock Markets MCP server. Source-of-truth for registry.modelcontextprotocol.io entry io.github.Hashlock-Tech/hashl",
+    "category": "developer",
+    "tags": [
+      "agent-native",
+      "canonical",
+      "configuration"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/Hashlock-Tech/hashlock-mcp-manifest",
+    "created": ""
+  },
+  {
+    "name": "mcp-filesystem",
+    "version": "0.2.0",
+    "owner": "anthropic",
+    "description": "\u5b89\u5168\u7684\u6587\u4ef6\u7cfb\u7edf\u64cd\u4f5c\uff0c\u652f\u6301\u8bfb/\u5199/\u641c\u7d22/\u76ee\u5f55\u5217\u8868",
+    "category": "developer",
+    "tags": [
+      "filesystem",
+      "file",
+      "coding"
+    ],
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/modelcontextprotocol/servers",
+    "created": ""
+  },
+  {
+    "name": "mcp-github",
+    "version": "0.1.0",
+    "owner": "community",
+    "description": "GitHub API \u96c6\u6210\uff1a\u7ba1\u7406\u4ed3\u5e93\u3001issues\u3001PRs\u3001\u641c\u7d22\u4ee3\u7801",
+    "category": "developer",
+    "tags": [
+      "github",
+      "git",
+      "coding"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/modelcontextprotocol/servers",
+    "created": ""
+  },
+  {
+    "name": "mcp-nomad",
+    "version": "0.1.0",
+    "owner": "kocierik",
+    "description": "A nomad MCP Server (modelcontextprotocol)",
+    "category": "developer",
+    "tags": [
+      "nomad",
+      "server"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/kocierik/mcp-nomad",
+    "created": ""
+  },
+  {
+    "name": "mcp-notion",
+    "version": "0.1.0",
+    "owner": "community",
+    "description": "Notion API \u96c6\u6210\uff1a\u8bfb\u5199\u9875\u9762\u3001\u6570\u636e\u5e93\u3001\u641c\u7d22\u5de5\u4f5c\u533a",
+    "category": "productivity",
+    "tags": [
+      "notion",
+      "docs",
+      "knowledge"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/makenotion/notion-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "mcp-server-dameng",
+    "version": "0.1.0",
+    "owner": "SpringDamon",
+    "description": "\u8fbe\u68a6\u6570\u636e\u5e93 MCP Server \u2014 \u901a\u8fc7 [Model Context Protocol (MCP)](https://modelcontextprotocol.io) \u8ba9 AI \u52a9\u624b\uff08Claude\u3001Trae\u3001Cursor \u7b49\uff09\u76f4\u63a5\u8fde\u63a5\u548c\u67e5\u8be2\u8fbe\u68a6 DM8 \u6570\u636e\u5e93\u3002",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://github.com/SpringDamon/mcp-server-dameng",
+    "created": ""
+  },
+  {
+    "name": "mcp-server-semgrep",
+    "version": "0.1.0",
+    "owner": "vetcoders",
+    "description": "MCP Server Semgrep is a [Model Context Protocol](https://modelcontextprotocol.io) compliant server that integrates the powerful Semgrep static analysi",
+    "category": "developer",
+    "tags": [
+      "anthropic-claude",
+      "modelcontextprotocol",
+      "semgrep"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/vetcoders/mcp-server-semgrep",
+    "created": ""
+  },
+  {
+    "name": "mcp-slack",
+    "version": "0.1.0",
+    "owner": "community",
+    "description": "Slack \u96c6\u6210\uff1a\u53d1\u9001\u6d88\u606f\u3001\u8bfb\u53d6\u9891\u9053\u3001\u641c\u7d22\u5386\u53f2",
+    "category": "communication",
+    "tags": [
+      "slack",
+      "chat",
+      "team"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/modelcontextprotocol/servers",
+    "created": ""
+  },
+  {
+    "name": "mseep-linear-mcp-server",
+    "version": "0.1.0",
+    "owner": "mseep",
+    "description": "A Model Context Protocol server for the Linear API.",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@mseep/linear-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "obsidian-mcp-server",
+    "version": "3.1.9",
+    "owner": "npm",
+    "description": "MCP server for Obsidian vaults \u2014 read, write, search, and surgically edit notes, tags, and frontmatter via the Local REST API plugin. STDIO or Streama",
+    "category": "productivity",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/obsidian-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "railway-mcp-server",
+    "version": "0.1.11",
+    "owner": "railway",
+    "description": "Official Railway MCP server",
+    "category": "automation",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@railway/mcp-server",
+    "created": ""
+  },
+  {
+    "name": "storybook-mcp-server",
+    "version": "0.1.3",
+    "owner": "npm",
+    "description": "MCP server for Storybook - provides AI assistants access to components, stories, properties and screenshots",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/storybook-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "taazkareem-clickup-mcp-server",
+    "version": "0.14.4",
+    "owner": "taazkareem",
+    "description": "ClickUp MCP Server - Powering AI Agents with full ClickUp task, document, and chat management capabilities.",
+    "category": "communication",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://www.npmjs.com/package/@taazkareem/clickup-mcp-server",
+    "created": ""
+  },
+  {
+    "name": "tgfmcp",
+    "version": "0.1.0",
+    "owner": "vaibhavpandeyvpz",
+    "description": "tgfmcp is an open-source Telegram stdio MCP server built on top of telegraf, commander, and @modelcontextprotocol/sdk.",
+    "category": "communication",
+    "tags": [
+      "ai",
+      "artificial-intelligence",
+      "chatgpt"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/vaibhavpandeyvpz/tgfmcp",
+    "created": ""
+  },
+  {
+    "name": "timemcp",
+    "version": "0.1.0",
+    "owner": "chew-z",
+    "description": "Golang MCP server to replace modelcontextprotocol/time MCP server",
+    "category": "developer",
+    "tags": [
+      "golang",
+      "mcp-server",
+      "time"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/chew-z/TimeMCP",
+    "created": ""
+  },
+  {
+    "name": "wappmcp",
+    "version": "0.1.0",
+    "owner": "vaibhavpandeyvpz",
+    "description": "wappmcp is an open-source WhatsApp Web CLI and stdio MCP server built on top of whatsapp-web.js, commander, and @modelcontextprotocol/sdk.",
+    "category": "communication",
+    "tags": [
+      "agent",
+      "agentic-ai",
+      "ai"
+    ],
+    "license": "MIT",
+    "homepage": "https://github.com/vaibhavpandeyvpz/wappmcp",
+    "created": ""
+  },
+  {
+    "name": "xero-mcp-server",
+    "version": "0.1.0",
+    "owner": "XeroAPI",
+    "description": "An MCP server that integrates with the MCP protocol. https://modelcontextprotocol.io/introduction",
+    "category": "developer",
+    "tags": [],
+    "license": "MIT",
+    "homepage": "https://github.com/XeroAPI/xero-mcp-server",
+    "created": ""
+  }
+];
+
+const CATEGORIES = ['developer','data','communication','automation','productivity'];
+const CAT_LABELS = {'developer':'开发者工具','data':'数据处理','communication':'通讯协作','automation':'自动化','productivity':'效率工具'};
+const CAT_COLORS = {'developer':'#4dd0e1','data':'#a78bfa','communication':'#4ade80','automation':'#fbbf24','productivity':'#f87171'};
+
+// Editor's picks (curated)
+const PICKS = ['agent-cost','cloudflare-mcp-server','mcp-server-atlassian-jira'];
+let currentCat = 'all';
+
+function init() {
+  const fc = document.getElementById('filters');
+  let h = '<button class="filter-btn active" data-cat="all" onclick="setCat(\'all\')">全部</button>';
+  CATEGORIES.forEach(c => {
+    h += '<button class="filter-btn" data-cat="'+c+'" onclick="setCat(\''+c+'\')">'+CAT_LABELS[c]+'</button>';
+  });
+  fc.innerHTML = h;
+  renderPicks();
+  renderAll();
+}
+
+function setCat(c) {
+  currentCat = c;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === c));
+  filterTools();
+}
+
+function filterTools() {
+  const q = document.getElementById('search').value.toLowerCase().trim();
+  let filtered = MCP_TOOLS.filter(t => {
+    if (currentCat !== 'all' && t.category !== currentCat) return false;
+    if (q) return t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) || (t.owner && t.owner.toLowerCase().includes(q));
+    return !PICKS.includes(t.name);
+  });
+  document.getElementById('count-badge').textContent = filtered.length;
+  renderGrid(filtered);
+}
+
+function renderPicks() {
+  const picks = MCP_TOOLS.filter(t => PICKS.includes(t.name));
+  const g = document.getElementById('picks-grid');
+  if (!picks.length) { g.innerHTML = '<div class=\"empty-state\">编辑精选中...</div>'; return; }
+  g.innerHTML = picks.map(t => cardHtml(t, true)).join('');
+}
+
+function renderAll() {
+  const all = MCP_TOOLS.filter(t => !PICKS.includes(t.name));
+  renderGrid(all);
+}
+
+function renderGrid(tools) {
+  const g = document.getElementById('grid');
+  if (!tools.length) { g.innerHTML = '<div class=\"empty-state\">没有匹配的工具。试试换个关键词？</div>'; return; }
+  g.innerHTML = tools.map(t => cardHtml(t, false)).join('');
+}
+
+function cardHtml(t, isPick) {
+  const tag = (t.tags && t.tags.length) ? t.tags[0] : null;
+  const catColor = CAT_COLORS[t.category] || '#7888a8';
+  const catLabel = CAT_LABELS[t.category] || t.category;
+  const name = t.name.length > 28 ? t.name.slice(0,26)+'...' : t.name;
+  const pickBadge = isPick ? '<div class=\"pick-badge\">&#10022; 精选</div>' : '';
+  return '<div class=\"tool-card'+(isPick?' pick':'')+'\" onclick=\"openTool(\''+t.name+'\')\">'
+    + pickBadge
+    + '<div class=\"c-top\">'
+    + '<div class=\"c-name\">'+name+'</div>'
+    + '<span class=\"c-cat\" style=\"color:'+catColor+'\">'+catLabel+'</span>'
+    + '</div>'
+    + '<div class=\"c-desc\">'+t.description+'</div>'
+    + '<div class=\"c-foot\">'
+    + '<div class=\"c-tags\">'+(tag?'<span class=\"c-tag\">'+tag+'</span>':'')+'<span class=\"c-version\">v'+t.version+'</span></div>'
+    + '<span class=\"c-arrow\">&#8594;</span>'
+    + '</div></div>';
+}
+
+function openTool(name) {
+  const t = MCP_TOOLS.find(x => x.name === name);
+  if (!t) return;
+  const tags = (t.tags||[]).map(tag => '<span class=\"m-tag\">'+tag+'</span>').join('');
+  const catLabel = CAT_LABELS[t.category]||t.category;
+  const catColor = CAT_COLORS[t.category]||'#7888a8';
+  document.getElementById('modal-content').innerHTML =
+    '<button class=\"m-close\" onclick=\"closeModal()\">&#10005;</button>'
+    + '<div class=\"m-name\">'+t.name+'</div>'
+    + '<div class=\"m-owner\">by '+(t.owner||'unknown')+' &middot; <span style=\"color:'+catColor+'\">'+catLabel+'</span></div>'
+    + '<div class=\"m-desc\">'+t.description+'</div>'
+    + '<div class=\"m-meta\">'
+    + '<div class=\"m-meta-item\"><strong>版本</strong> v'+(t.version||'0.1')+'</div>'
+    + '<div class=\"m-meta-item\"><strong>许可</strong> '+(t.license||'MIT')+'</div>'
+    + (t.created ? '<div class=\"m-meta-item\"><strong>收录</strong> '+t.created.slice(0,10)+'</div>' : '')
+    + '</div>'
+    + (tags ? '<div class=\"m-tags\">'+tags+'</div>' : '')
+    + (t.homepage ? '<a href=\"'+t.homepage+'\" target=\"_blank\" class=\"m-link\">&#8594; 查看详情</a>' : '');
+  document.getElementById('modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+init();
+</script>
+</body>
+</html>
