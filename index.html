@@ -460,6 +460,101 @@ footer a:hover{text-decoration:underline}
   .nav-links a:hover::after{transform:scaleX(1)}
 }
 
+
+
+/* ── Project Card Layout ── */
+.project-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  margin-bottom:20px;
+  overflow:hidden;
+  transition:all .25s;
+}
+.project-card:hover{
+  border-color:var(--border-hover);
+  box-shadow:0 8px 32px rgba(0,0,0,.25);
+}
+.project-card:last-child{margin-bottom:56px}
+
+.pc-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:18px 22px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.pc-head::after{
+  content:'';position:absolute;bottom:-1px;left:0;right:0;
+  height:2px;
+}
+.pc-icon{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;flex-shrink:0;
+}
+.pc-name{font-size:16px;font-weight:700;letter-spacing:-.2px}
+.pc-status{
+  margin-left:auto;
+  font-size:10px;font-weight:600;
+  padding:3px 10px;border-radius:6px;
+  white-space:nowrap;
+}
+.pc-status.active{background:rgba(74,222,128,.12);color:var(--green)}
+.pc-status.waiting{background:rgba(251,191,24,.12);color:var(--amber)}
+
+.pc-body{padding:8px 22px 14px}
+
+.pc-row{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:10px 0;
+  text-decoration:none;
+  color:inherit;
+  border-bottom:1px solid rgba(148,200,255,.04);
+  transition:all .15s;
+}
+.pc-row:last-child{border-bottom:none}
+.pc-row:hover{padding-left:4px}
+.pc-row-icon{font-size:16px;margin-top:1px;flex-shrink:0}
+.pc-row-body{flex:1;min-width:0}
+.pc-row-title{font-size:13px;font-weight:600;margin-bottom:2px}
+.pc-row-desc{font-size:12px;color:var(--muted);line-height:1.5;word-break:break-word}
+.pc-row-link{font-size:11px;font-weight:500;white-space:nowrap;margin-top:1px;transition:all .15s}
+.pc-row:hover .pc-row-link{transform:translateX(2px)}
+.pc-row-link.def{color:var(--accent)}
+.pc-row-link.demo{color:var(--purple)}
+.pc-row-link.gh{color:var(--green)}
+
+/* Accent bars per project */
+.project-card.cost .pc-head::after{background:linear-gradient(90deg,#4dd0e1,transparent)}
+.project-card.registry .pc-head::after{background:linear-gradient(90deg,#a78bfa,transparent)}
+.project-card.datadog .pc-head::after{background:linear-gradient(90deg,#4ade80,transparent)}
+.project-card.surface .pc-head::after{background:linear-gradient(90deg,#fbbf24,transparent)}
+.project-card.scanner .pc-head::after{background:linear-gradient(90deg,#f87171,transparent)}
+.project-card.cost .pc-icon{background:rgba(77,208,225,.12)}
+.project-card.registry .pc-icon{background:rgba(167,139,250,.12)}
+.project-card.datadog .pc-icon{background:rgba(74,222,128,.12)}
+.project-card.surface .pc-icon{background:rgba(251,191,36,.12)}
+.project-card.scanner .pc-icon{background:rgba(248,113,113,.12)}
+
+@media(min-width:1025px){
+  .pc-head{padding:16px 22px}
+  .pc-icon{width:34px;height:34px;font-size:17px}
+  .pc-name{font-size:15px}
+  .pc-body{padding:4px 22px 10px}
+  .pc-row{padding:8px 0}
+  .pc-row-title{font-size:12px}
+  .pc-row-desc{font-size:11.5px}
+}
+@media(max-width:720px){
+  .pc-head{padding:14px 16px}
+  .pc-body{padding:4px 16px 10px}
+  .pc-row{gap:10px}
+}
+
 </style>
 </head>
 <body>
@@ -517,137 +612,181 @@ footer a:hover{text-decoration:underline}
     <p>产品定义 · DEMO · GitHub 仓库 · 一条龙</p>
   </div>
 
-  <!-- ── agent-cost-cli ── -->
-  <div class="project-block cost">
-    <div class="project-header">
-      <div class="picon">💰</div>
-      <span class="pname">agent-cost-cli</span>
-      <span class="pstatus active">Active</span>
+    <!-- ── agent-cost-cli ── -->
+  <div class="project-card cost">
+    <div class="pc-head">
+      <div class="pc-icon">💰</div>
+      <span class="pc-name">agent-cost-cli</span>
+      <span class="pc-status active">Active</span>
     </div>
-    <div class="project-docs-grid">
-      <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="doc-card fade-in">
-        <div class="doci">📄 产品定义</div>
-        <div class="docd">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎</div>
-        <div class="doclabel def">产品定义说明书 →</div>
+    <div class="pc-body">
+      <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="pc-row fade-in">
+        <div class="pc-row-icon">📄</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">产品定义</div>
+          <div class="pc-row-desc">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎</div>
+        </div>
+        <div class="pc-row-link def">详情 →</div>
       </a>
-      <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html" class="doc-card fade-in">
-        <div class="doci">🎮 DEMO</div>
-        <div class="docd">交互式演示 — 终端模拟、成本仪表盘实时渲染。体验跨框架成本追踪的实际操作流程</div>
-        <div class="doclabel demo">交互式 DEMO →</div>
+      <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html" class="pc-row fade-in">
+        <div class="pc-row-icon">🎮</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">交互式 DEMO</div>
+          <div class="pc-row-desc">终端模拟、成本仪表盘实时渲染。体验跨框架成本追踪的实际操作流程</div>
+        </div>
+        <div class="pc-row-link demo">演示 →</div>
       </a>
-      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank" class="doc-card fade-in">
-        <div class="doci">🐙 GitHub 仓库</div>
-        <div class="docd">包含 Python CLI、Rust 骨架、MCP Server v0.2、GitHub Actions CI。旗舰级 MCP 工具</div>
-        <div class="doclabel gh">github.com/jasoneip01-pixel/agent-cost-cli →</div>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank" class="pc-row fade-in">
+        <div class="pc-row-icon">🐙</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">GitHub 仓库</div>
+          <div class="pc-row-desc">Python CLI · Rust 骨架 · MCP Server v0.2 · CI/CD 全套</div>
+        </div>
+        <div class="pc-row-link gh">仓库 →</div>
       </a>
     </div>
   </div>
 
   <!-- ── MCP Registry ── -->
-  <div class="project-block registry">
-    <div class="project-header">
-      <div class="picon">📦</div>
-      <span class="pname">MCP Registry</span>
-      <span class="pstatus active">Active</span>
+  <div class="project-card registry">
+    <div class="pc-head">
+      <div class="pc-icon">📦</div>
+      <span class="pc-name">MCP Registry</span>
+      <span class="pc-status active">Active</span>
     </div>
-    <div class="project-docs-grid">
-      <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="doc-card fade-in">
-        <div class="doci">📄 产品定义</div>
-        <div class="docd">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI 含 search / list / install / publish</div>
-        <div class="doclabel def">产品定义说明书 →</div>
+    <div class="pc-body">
+      <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="pc-row fade-in">
+        <div class="pc-row-icon">📄</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">产品定义</div>
+          <div class="pc-row-desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI 含 search / list / install / publish</div>
+        </div>
+        <div class="pc-row-link def">详情 →</div>
       </a>
-      <a href="projects/mcp-registry/demos/mcp-registry-demo.html" class="doc-card fade-in">
-        <div class="doci">🎮 DEMO</div>
-        <div class="docd">交互式演示 — Registry 浏览器、CLI 命令仿真、每日采集数据流可视化</div>
-        <div class="doclabel demo">交互式 DEMO →</div>
+      <a href="projects/mcp-registry/demos/mcp-registry-demo.html" class="pc-row fade-in">
+        <div class="pc-row-icon">🎮</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">交互式 DEMO</div>
+          <div class="pc-row-desc">Registry 浏览器、CLI 命令仿真、每日采集数据流可视化</div>
+        </div>
+        <div class="pc-row-link demo">演示 →</div>
       </a>
-      <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank" class="doc-card fade-in">
-        <div class="doci">🐙 GitHub 仓库</div>
-        <div class="docd">包含 SPEC.md、CLI、registry/index.json、CI/CD 索引校验、每日采集 cron</div>
-        <div class="doclabel gh">github.com/jasoneip01-pixel/mcp-registry →</div>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank" class="pc-row fade-in">
+        <div class="pc-row-icon">🐙</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">GitHub 仓库</div>
+          <div class="pc-row-desc">SPEC.md · CLI · registry/index.json · CI/CD 索引校验 · Cron 采集</div>
+        </div>
+        <div class="pc-row-link gh">仓库 →</div>
       </a>
     </div>
   </div>
 
   <!-- ── Agent Datadog ── -->
-  <div class="project-block datadog">
-    <div class="project-header">
-      <div class="picon">📊</div>
-      <span class="pname">Agent Datadog</span>
-      <span class="pstatus active">Active</span>
+  <div class="project-card datadog">
+    <div class="pc-head">
+      <div class="pc-icon">📊</div>
+      <span class="pc-name">Agent Datadog</span>
+      <span class="pc-status active">Active</span>
     </div>
-    <div class="project-docs-grid">
-      <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="doc-card fade-in">
-        <div class="doci">📄 产品定义</div>
-        <div class="docd">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
-        <div class="doclabel def">产品定义说明书 →</div>
+    <div class="pc-body">
+      <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="pc-row fade-in">
+        <div class="pc-row-icon">📄</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">产品定义</div>
+          <div class="pc-row-desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
+        </div>
+        <div class="pc-row-link def">详情 →</div>
       </a>
-      <a href="projects/agent-datadog/demos/agent-datadog-demo.html" class="doc-card fade-in">
-        <div class="doci">🎮 DEMO</div>
-        <div class="docd">交互式演示 — 实时成本仪表盘、Agent 拓扑可视化、框架对比图表</div>
-        <div class="doclabel demo">交互式 DEMO →</div>
+      <a href="projects/agent-datadog/demos/agent-datadog-demo.html" class="pc-row fade-in">
+        <div class="pc-row-icon">🎮</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">交互式 DEMO</div>
+          <div class="pc-row-desc">实时成本仪表盘、Agent 拓扑可视化、框架对比图表</div>
+        </div>
+        <div class="pc-row-link demo">演示 →</div>
       </a>
-      <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank" class="doc-card fade-in">
-        <div class="doci">🐙 GitHub 仓库</div>
-        <div class="docd">AgentWatch Fork + FastAPI 计费引擎、GitHub Actions CI。5 框架定价数据层</div>
-        <div class="doclabel gh">github.com/jasoneip01-pixel/agent-datadog →</div>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank" class="pc-row fade-in">
+        <div class="pc-row-icon">🐙</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">GitHub 仓库</div>
+          <div class="pc-row-desc">AgentWatch Fork · FastAPI 计费引擎 · CI/CD · 5 框架定价数据</div>
+        </div>
+        <div class="pc-row-link gh">仓库 →</div>
       </a>
     </div>
   </div>
 
   <!-- ── Skill Surface Diff ── -->
-  <div class="project-block surface">
-    <div class="project-header">
-      <div class="picon">🔍</div>
-      <span class="pname">Skill Surface Diff</span>
-      <span class="pstatus waiting">Waiting</span>
+  <div class="project-card surface">
+    <div class="pc-head">
+      <div class="pc-icon">🔍</div>
+      <span class="pc-name">Skill Surface Diff</span>
+      <span class="pc-status waiting">Waiting</span>
     </div>
-    <div class="project-docs-grid">
-      <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="doc-card fade-in">
-        <div class="doci">📄 产品定义</div>
-        <div class="docd">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
-        <div class="doclabel def">产品定义说明书 →</div>
+    <div class="pc-body">
+      <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="pc-row fade-in">
+        <div class="pc-row-icon">📄</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">产品定义</div>
+          <div class="pc-row-desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
+        </div>
+        <div class="pc-row-link def">详情 →</div>
       </a>
-      <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html" class="doc-card fade-in">
-        <div class="doci">🎮 DEMO</div>
-        <div class="docd">交互式演示 — 差异对比视图、权限变更高亮、技能面可视化</div>
-        <div class="doclabel demo">交互式 DEMO →</div>
+      <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html" class="pc-row fade-in">
+        <div class="pc-row-icon">🎮</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">交互式 DEMO</div>
+          <div class="pc-row-desc">差异对比视图、权限变更高亮、技能面可视化</div>
+        </div>
+        <div class="pc-row-link demo">演示 →</div>
       </a>
-      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank" class="doc-card fade-in">
-        <div class="doci">🐙 GitHub 仓库</div>
-        <div class="docd">包含 CLI + Scanner Engine、差异分析核心、AST 级技能面解析</div>
-        <div class="doclabel gh">github.com/jasoneip01-pixel/skill-surface-diff →</div>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank" class="pc-row fade-in">
+        <div class="pc-row-icon">🐙</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">GitHub 仓库</div>
+          <div class="pc-row-desc">CLI · Scanner Engine · 差异分析核心 · 技能面 AST 解析</div>
+        </div>
+        <div class="pc-row-link gh">仓库 →</div>
       </a>
     </div>
   </div>
 
   <!-- ── Skill Scanner ── -->
-  <div class="project-block scanner">
-    <div class="project-header">
-      <div class="picon">🛡️</div>
-      <span class="pname">Skill Scanner</span>
-      <span class="pstatus waiting">Waiting</span>
+  <div class="project-card scanner">
+    <div class="pc-head">
+      <div class="pc-icon">🛡️</div>
+      <span class="pc-name">Skill Scanner</span>
+      <span class="pc-status waiting">Waiting</span>
     </div>
-    <div class="project-docs-grid">
-      <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="doc-card fade-in">
-        <div class="doci">📄 产品定义</div>
-        <div class="docd">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。PyPI + CI/CD 全套就绪</div>
-        <div class="doclabel def">产品定义说明书 →</div>
+    <div class="pc-body">
+      <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="pc-row fade-in">
+        <div class="pc-row-icon">📄</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">产品定义</div>
+          <div class="pc-row-desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。PyPI + CI/CD 全套就绪</div>
+        </div>
+        <div class="pc-row-link def">详情 →</div>
       </a>
-      <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html" class="doc-card fade-in">
-        <div class="doci">🎮 DEMO</div>
-        <div class="docd">交互式演示 — 安全扫描报告、风险评分、供应链可视化</div>
-        <div class="doclabel demo">交互式 DEMO →</div>
+      <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html" class="pc-row fade-in">
+        <div class="pc-row-icon">🎮</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">交互式 DEMO</div>
+          <div class="pc-row-desc">安全扫描报告、风险评分、供应链可视化</div>
+        </div>
+        <div class="pc-row-link demo">演示 →</div>
       </a>
-      <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank" class="doc-card fade-in">
-        <div class="doci">🐙 GitHub 仓库</div>
-        <div class="docd">PyPI 包、GitHub Actions CI、全套安全扫描规则引擎就绪</div>
-        <div class="doclabel gh">github.com/jasoneip01-pixel/skill-scanner →</div>
+      <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank" class="pc-row fade-in">
+        <div class="pc-row-icon">🐙</div>
+        <div class="pc-row-body">
+          <div class="pc-row-title">GitHub 仓库</div>
+          <div class="pc-row-desc">PyPI 包 · CI/CD · 安全扫描规则引擎 · 全套就绪</div>
+        </div>
+        <div class="pc-row-link gh">仓库 →</div>
       </a>
     </div>
   </div>
-</div>
-
+  
 <!-- Footer -->
 <footer>
   <div class="container footer-inner">
