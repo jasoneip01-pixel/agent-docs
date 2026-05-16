@@ -268,13 +268,13 @@ nav{
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--radius);
-  padding:28px 24px 24px;
+  padding:24px;
   text-decoration:none;
   color:inherit;
   display:flex;
   flex-direction:column;
+  gap:10px;
   transition:all .3s ease;
-  overflow:hidden;
 }
 .card::before{
   content:'';
@@ -296,7 +296,6 @@ nav{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
-  margin-bottom:12px;
 }
 .card-icon{
   width:44px;
@@ -329,40 +328,32 @@ nav{
   font-size:17px;
   font-weight:700;
   letter-spacing:-.3px;
-  margin-bottom:8px;
 }
 .card-desc{
   font-size:13px;
   color:var(--muted);
   line-height:1.65;
-  margin-bottom:16px;
-  flex:1;
-  display:-webkit-box;
-  -webkit-line-clamp:3;
-  -webkit-box-orient:vertical;
-  overflow:hidden;
 }
 
-.card-meta{
+.card-tags{
   display:flex;
-  gap:12px;
-  margin-bottom:16px;
+  gap:6px;
   flex-wrap:wrap;
 }
-.card-meta-item{
-  display:flex;
-  align-items:center;
-  gap:4px;
+.card-tag{
   font-size:11px;
   color:var(--muted);
+  border:1px solid var(--border);
+  border-radius:5px;
+  padding:2px 8px;
+  white-space:nowrap;
 }
-.card-meta-item svg{width:14px;height:14px;opacity:.6}
 
 .card-links{
   display:flex;
-  gap:8px;
+  gap:6px;
   flex-wrap:wrap;
-  padding-top:16px;
+  padding-top:14px;
   border-top:1px solid var(--border);
 }
 .card-link{
@@ -463,11 +454,9 @@ footer a:hover{text-decoration:underline}
     </p>
     <div class="hero-actions fade-in">
       <a href="#projects" class="hero-btn hero-btn-primary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        浏览项目
+        ↓ 浏览项目
       </a>
       <a href="https://github.com/jasoneip01-pixel" target="_blank" class="hero-btn hero-btn-secondary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
         GitHub
       </a>
     </div>
@@ -497,10 +486,10 @@ footer a:hover{text-decoration:underline}
       </div>
       <div class="card-name">agent-cost-cli</div>
       <div class="card-desc">Agent 推理成本追踪 CLI + MCP Server v0.2。8 工具 — JSONL 解析 / 模型对比 / 成本估算 / 文件监视 / 告警。20+ 模型计费引擎，MCP Registry 首个旗舰入驻</div>
-      <div class="card-meta">
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>v0.2</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>MCP Server</span>
+      <div class="card-tags">
+        <span class="card-tag">v0.2</span>
+        <span class="card-tag">CI/CD ✅</span>
+        <span class="card-tag">MCP Server</span>
       </div>
       <div class="card-links">
         <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
@@ -517,10 +506,10 @@ footer a:hover{text-decoration:underline}
       </div>
       <div class="card-name">MCP Registry</div>
       <div class="card-desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，31 工具索引，每日 cron 自动采集。CLI: search / list / install / publish</div>
-      <div class="card-meta">
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>31 tools</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Cron 采集</span>
+      <div class="card-tags">
+        <span class="card-tag">31 tools</span>
+        <span class="card-tag">CI/CD ✅</span>
+        <span class="card-tag">Cron 采集</span>
       </div>
       <div class="card-links">
         <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
@@ -537,10 +526,10 @@ footer a:hover{text-decoration:underline}
       </div>
       <div class="card-name">Agent Datadog</div>
       <div class="card-desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流。API: /cost/compare, /cost/benchmark</div>
-      <div class="card-meta">
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>AgentWatch Fork</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>FastAPI</span>
+      <div class="card-tags">
+        <span class="card-tag">AgentWatch Fork</span>
+        <span class="card-tag">CI/CD ✅</span>
+        <span class="card-tag">FastAPI</span>
       </div>
       <div class="card-links">
         <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
@@ -557,9 +546,9 @@ footer a:hover{text-decoration:underline}
       </div>
       <div class="card-name">Skill Surface Diff</div>
       <div class="card-desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化。生态等待期</div>
-      <div class="card-meta">
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>v0.1</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Scanner</span>
+      <div class="card-tags">
+        <span class="card-tag">v0.1</span>
+        <span class="card-tag">Scanner</span>
       </div>
       <div class="card-links">
         <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
@@ -576,10 +565,10 @@ footer a:hover{text-decoration:underline}
       </div>
       <div class="card-name">Skill Scanner</div>
       <div class="card-desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测。CI/CD + PyPI 全套就绪，等待安全事件引爆</div>
-      <div class="card-meta">
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>PyPI</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>CI/CD</span>
-        <span class="card-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security</span>
+      <div class="card-tags">
+        <span class="card-tag">PyPI</span>
+        <span class="card-tag">CI/CD ✅</span>
+        <span class="card-tag">Security</span>
       </div>
       <div class="card-links">
         <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html" class="card-link" onclick="event.stopPropagation()">📄 产品定义</a>
