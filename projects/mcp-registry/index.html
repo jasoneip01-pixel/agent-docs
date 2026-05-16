@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<meta name="description" content="MCP Registry — MCP 原生工具注册表。pip install mcp-registry。CLI discover + install MCP tools。Agent 的 npm。">
+<meta property="og:title" content="MCP Registry — MCP 原生工具注册表">
+<meta property="og:description" content="Agent 的 npm。pip install mcp-registry。搜索、安装、发布 MCP 工具，一行命令搞定。">
+<meta property="og:url" content="https://jasoneip01-pixel.github.io/mcp-registry/">
+<meta property="og:type" content="website">
+<title>MCP Registry — MCP 原生工具注册表 · Agent 的 npm</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#22d3ee; --blue:#60a5fa; --purple:#a78bfa; --pink:#f472b6;
+  --max-w:1100px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(34,211,238,.04) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.04) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:15px;line-height:1.7;
+}
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(9,13,20,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;
+}
+nav .inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+}
+nav .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+nav .brand span{color:var(--accent)}
+nav .brand .ver{font-size:10px;color:var(--muted);background:var(--panel2);padding:2px 6px;border-radius:4px}
+nav .links{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+nav .links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+nav .links a:hover{color:var(--text)}
+nav .gh{display:flex;align-items:center;gap:4px;font-size:12px}
+section{padding:70px 0}
+section.alt{background:rgba(255,255,255,.01)}
+.inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+h2{font-size:28px;font-weight:700;margin-bottom:32px;letter-spacing:-.3px}
+h2 span{color:var(--accent)}
+h3{font-size:18px;font-weight:600;margin-bottom:12px}
+p{color:var(--muted);margin-bottom:12px;line-height:1.75}
+p strong{color:var(--text)}
+.hero{padding:80px 0 60px;text-align:center}
+.hero h1{font-size:44px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
+.hero h1 .hl{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .subtitle{font-size:17px;color:var(--muted);max-width:650px;margin:0 auto 32px}
+.hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 22px;border-radius:8px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .15s;cursor:pointer;
+}
+.btn-p{background:var(--accent);color:#0a0e14;border:none}
+.btn-p:hover{background:#5de0ee;transform:translateY(-1px)}
+.btn-s{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn-s:hover{border-color:rgba(148,200,255,.25);background:var(--panel2)}
+.install-bar{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  margin-top:20px;
+}
+.install-bar .code{color:var(--pass);user-select:all}
+.install-bar .copy{font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;border-radius:4px}
+.install-bar .copy:hover{color:var(--text);background:var(--panel)}
+.stats-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+.stat-item{text-align:center}
+.stat-item .num{font-size:36px;font-weight:800;color:var(--accent)}
+.stat-item .label{font-size:12px;color:var(--muted);margin-top:4px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;transition:all .2s;
+}
+.feat-card:hover{border-color:rgba(148,200,255,.18)}
+.feat-card .icon{font-size:24px;margin-bottom:12px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.feat-card p{font-size:12px;line-height:1.65;margin:0}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmd-card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:20px;overflow:hidden;
+}
+.cmd-card h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.cmd-card pre{
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;
+  color:var(--muted);overflow-x:auto;
+}
+.cmd-card pre .p{color:var(--pass)}
+.cmd-card pre .f{color:var(--blue)}
+.cmd-card pre .v{color:var(--accent)}
+.cmd-card pre .c{color:rgba(255,255,255,.25)}
+.copy-block{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  position:relative;line-height:1.7;overflow-x:auto;white-space:pre;
+  color:var(--text);
+}
+.copy-block .lang{position:absolute;top:8px;right:12px;font-size:10px;color:var(--muted)}
+.copy-block .cp{position:absolute;top:8px;right:56px;font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none}
+.copy-block .cp:hover{color:var(--accent)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text)}
+.tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.1);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.tag.t{background:rgba(34,211,238,.12);color:var(--accent)}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.doc-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px;text-align:center;text-decoration:none;display:block;transition:all .2s;
+}
+.doc-card:hover{border-color:rgba(148,200,255,.18);transform:translateY(-2px)}
+.doc-card .d-icon{font-size:28px;margin-bottom:8px}
+.doc-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.doc-card p{font-size:11px;color:var(--muted);margin:0}
+.faq-item{margin-bottom:20px}
+.faq-item .q{font-weight:600;color:var(--text);font-size:15px;margin-bottom:4px}
+.faq-item .a{color:var(--muted);font-size:14px;line-height:1.7}
+footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  text-align:center;color:var(--muted);font-size:13px;
+}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media(max-width:834px){
+  .feat-grid,.doc-grid{grid-template-columns:1fr 1fr}
+  .cmd-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero .subtitle{font-size:15px}
+  .cat-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .feat-grid,.cmd-grid,.doc-grid,.cat-grid{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .hero .subtitle{font-size:14px}
+  .stats-row{gap:20px}
+  .stat-item .num{font-size:28px}
+  h2{font-size:22px}
+  nav .links{gap:10px;font-size:11px}
+}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}
+.cat-item{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;text-align:center}
+.cat-item .c-icon{font-size:20px;margin-bottom:4px}
+.cat-item .c-name{font-size:12px;font-weight:600;color:var(--text)}
+.cat-item .c-count{font-size:10px;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">MCP <span>Registry</span> <span class="ver">v0.2.0</span></div>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#cli">CLI</a>
+      <a href="#tools">Tools</a>
+      <a href="#demos">Demos</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" class="gh" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="inner">
+    <h1><span class="hl">MCP Registry</span><br>Agent 的 npm</h1>
+    <p class="subtitle">搜索、安装、发布 MCP 工具，一行命令搞定。<br>基于 <strong>164M+</strong> MCP 协议下载量，为 Agent 生态构建原生工具注册表。</p>
+    <div class="ctas">
+      <a href="#cli" class="btn btn-p">⌨️ Get Started</a>
+      <a href="#demos" class="btn btn-s">🎮 Live Demo</a>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" class="btn btn-s" target="_blank">⭐ GitHub</a>
+    </div>
+    <div class="install-bar">
+      <span class="code">pip install mcp-registry</span>
+      <button class="copy" onclick="navigator.clipboard.writeText('pip install mcp-registry');this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">30</div><div class="label">Tools</div></div>
+      <div class="stat-item"><div class="num">7</div><div class="label">Categories</div></div>
+      <div class="stat-item"><div class="num">5</div><div class="label">CLI Commands</div></div>
+      <div class="stat-item"><div class="num">164M+</div><div class="label">MCP Downloads</div></div>
+      <div class="stat-item"><div class="num">MIT</div><div class="label">License</div></div>
+    </div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="inner">
+    <h2>为什么选择 <span>MCP Registry</span></h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="icon">⌨️</div>
+        <h4>CLI-First 体验</h4>
+        <p>全部操作在 terminal 完成。搜索、安装、发布，无需打开浏览器。对标 <code>npm search</code> 的体验标准。</p>
+      </div>
+      <div class="feat-card">
+        <div class="icon">📦</div>
+        <h4>一键安装 · 零配置</h4>
+        <p><code>mcp-registry install postgres-mcp</code> → 自动 clone + pip 依赖 + 注入 MCP 配置。到手即用。</p>
+      </div>
+      <div class="feat-card">
+        <div class="icon">🔄</div>
+        <h4>每日自动采集</h4>
+        <p>每日 02:00 UTC 从 GitHub + npm 双源发现新 MCP 工具，自动更新注册表。你永远有最新的工具。</p>
+      </div>
+      <div class="feat-card">
+        <div class="icon">🔌</div>
+        <h4>离线可搜</h4>
+        <p><code>registry/index.json</code> 是静态文件。clone 仓库后离线全量搜索，零网络依赖。核心是文件，不是 API。</p>
+      </div>
+      <div class="feat-card">
+        <div class="icon">📋</div>
+        <h4>元数据丰富</h4>
+        <p>每个工具包含：版本、描述、类别、Stars、Tools 列表、依赖、许可证。结构化 JSON，可机器消费。</p>
+      </div>
+      <div class="feat-card">
+        <div class="icon">🤝</div>
+        <h4>拥抱 MCP 生态</h4>
+        <p>寄生 MCP 协议（164M 下载），兼容所有 MCP 客户端。Claude · Cursor · Windsurf · VS Code 全接入。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="cli">
+  <div class="inner">
+    <h2>一行命令 <span>搜索安装</span></h2>
+    <div class="cmd-grid">
+      <div class="cmd-card">
+        <h4>mcp-registry search</h4>
+        <pre><span class="p">$</span> mcp-registry search postgres
+<span class="v">5 results (17ms)</span>
+ postgres-mcp    · PostgreSQL MCP
+ mysql-mcp       · MySQL MCP
+ redis-mcp       · Redis MCP
+ mongodb-mcp     · MongoDB MCP
+ elastic-mcp     · Elasticsearch MCP</pre>
+      </div>
+      <div class="cmd-card">
+        <h4>mcp-registry install</h4>
+        <pre><span class="p">$</span> mcp-registry install postgres-mcp
+<span class="v">✓</span> Resolved: postgres-mcp v2.1.0
+<span class="v">✓</span> Cloned dependencies
+<span class="v">✓</span> pip install -r requirements.txt
+<span class="v">✓</span> Config → ~/.config/mcp/servers.json</pre>
+      </div>
+      <div class="cmd-card">
+        <h4>mcp-registry info</h4>
+        <pre><span class="p">$</span> mcp-registry info gmail-mcp
+ gmail-mcp <span class="v">v0.3.1</span>
+ Description: Gmail MCP server
+ Category:    communication
+ Stars:       1,247
+ Tools (5): gmail.send, gmail.read,
+            gmail.search, gmail.drafts,
+            gmail.labels</pre>
+      </div>
+      <div class="cmd-card">
+        <h4>mcp-registry publish</h4>
+        <pre><span class="p">$</span> mcp-registry publish ./my-tool
+<span class="v">✓</span> Validated: 5 tools, 3 deps
+<span class="v">✓</span> Submitting to registry...
+<span class="v">✓</span> Published as "my-tool" v0.1.0
+ ⚡ PR: mcp-registry/pull/12</pre>
+      </div>
+    </div>
+
+    <h3 style="margin-top:40px">支持格式</h3>
+    <div class="table-wrap">
+    <table>
+      <tr><th>格式</th><th>参数</th><th>示例</th></tr>
+      <tr><td>Table</td><td><code>--format table</code> (默认)</td><td><code>mcp-registry list --category data</code></td></tr>
+      <tr><td>JSON</td><td><code>--format json</code></td><td><code>mcp-registry search gmail --format json</code></td></tr>
+      <tr><td>YAML</td><td><code>--format yaml</code></td><td><code>mcp-registry info postgres-mcp --format yaml</code></td></tr>
+    </table>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="inner">
+    <h2>30 枚种子 · <span>7 大类别</span></h2>
+    <p>覆盖从开发到创作的完整 MCP 工具生态，每日自动增长</p>
+
+    <div class="cat-grid">
+      <div class="cat-item"><div class="c-icon">⚡</div><div class="c-name">Developer</div><div class="c-count">6 tools</div></div>
+      <div class="cat-item"><div class="c-icon">📋</div><div class="c-name">Productivity</div><div class="c-count">5 tools</div></div>
+      <div class="cat-item"><div class="c-icon">💬</div><div class="c-name">Communication</div><div class="c-count">5 tools</div></div>
+      <div class="cat-item"><div class="c-icon">📊</div><div class="c-name">Data</div><div class="c-count">5 tools</div></div>
+      <div class="cat-item"><div class="c-icon">🤖</div><div class="c-name">Automation</div><div class="c-count">4 tools</div></div>
+      <div class="cat-item"><div class="c-icon">💰</div><div class="c-name">Finance</div><div class="c-count">3 tools</div></div>
+      <div class="cat-item"><div class="c-icon">🎨</div><div class="c-name">Creative</div><div class="c-count">2 tools</div></div>
+    </div>
+
+    <div class="table-wrap">
+    <table>
+      <tr><th>Tool</th><th>Category</th><th>Stars</th><th>Version</th><th>Tools</th></tr>
+      <tr><td><code>postgres-mcp</code></td><td><span class="tag t">Data</span></td><td>4,321</td><td>v2.1.0</td><td>9</td></tr>
+      <tr><td><code>git-mcp</code></td><td><span class="tag g">Developer</span></td><td>3,421</td><td>v1.4.0</td><td>12</td></tr>
+      <tr><td><code>slack-mcp</code></td><td><span class="tag u">Communication</span></td><td>3,214</td><td>v1.5.0</td><td>10</td></tr>
+      <tr><td><code>notion-mcp</code></td><td><span class="tag y">Productivity</span></td><td>2,843</td><td>v1.2.0</td><td>7</td></tr>
+      <tr><td><code>figma-mcp</code></td><td><span class="tag g">Creative</span></td><td>2,876</td><td>v0.8.1</td><td>7</td></tr>
+      <tr><td><code>github-mcp</code></td><td><span class="tag w">Automation</span></td><td>3,876</td><td>v1.7.0</td><td>8</td></tr>
+      <tr><td><code>stripe-mcp</code></td><td><span class="tag n">Finance</span></td><td>2,456</td><td>v1.3.0</td><td>8</td></tr>
+      <tr><td><code>stable-diff-mcp</code></td><td><span class="tag g">Creative</span></td><td>4,321</td><td>v1.0.3</td><td>4</td></tr>
+    </table>
+    </div>
+
+    <div class="copy-block" style="margin-top:20px">{
+  "name": "postgres-mcp",
+  "version": "2.1.0",
+  "description": "PostgreSQL — query, schema, migration",
+  "category": "data",
+  "license": "MIT",
+  "stars": 4321,
+  "tools": ["pg.query","pg.schema","pg.migrate","pg.execute",
+            "pg.tables","pg.index","pg.backup","pg.restore","pg.monitor"],
+  "dependencies": ["psycopg2-binary","sqlparse"]
+}<span class="lang">index.json</span></div>
+  </div>
+</section>
+
+<section class="alt" id="demos">
+  <div class="inner">
+    <h2>交互 <span>Demos</span></h2>
+    <p>浏览和体验 MCP Registry 的三种方式</p>
+    <div class="doc-grid">
+      <a href="mcp-registry-demo.html" class="doc-card" target="_blank">
+        <div class="d-icon">🎮</div>
+        <h4>Live Demo</h4>
+        <p>交互式 CLI 模拟 · 搜索 30 个工具 · 查看详情 · Browse by 类别</p>
+      </a>
+      <a href="mcp-registry-product-definition.html" class="doc-card" target="_blank">
+        <div class="d-icon">📘</div>
+        <h4>产品定义</h4>
+        <p>完整产品规格 · 第一性原理 · 竞品分析 · 技术架构 · 路线图</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/mcp-registry" class="doc-card" target="_blank">
+        <div class="d-icon">📦</div>
+        <h4>源码仓库</h4>
+        <p>GitHub · CLI 源码 · 采集脚本 · 注册表数据 · 安装指南</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <h2>常见 <span>问题</span></h2>
+    <div class="faq-item">
+      <div class="q">MCP Registry 和 pulsemcp / smithery.ai / mcp.so 有什么区别？</div>
+      <div class="a">所有竞品是 Web 聚合器（浏览器搜 → 复制 JSON → 粘贴到配置文件）。MCP Registry 是 CLI-first：terminal 里搜 → 一行命令安装 → 自动注入 MCP 配置。不需要打开浏览器，不需要手写 JSON，<strong>像 npm 一样工作</strong>。</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">数据源从哪里来？更新频率？</div>
+      <div class="a">GitHub (topic:mcp-server, stars>100) + npm (keyword:mcp-server) 双源。每日 02:00 UTC 自动采集，GitHub Actions cron 调度，自动 dedup + 自动 PR。</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">离线能使用吗？</div>
+      <div class="a">可以。clone 仓库后 <code>mcp-registry search</code> 使用本地的 <code>registry/index.json</code>，全量搜索零网络请求。线上模式会拉取最新 index.json。</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">如何发布自己的 MCP 工具？</div>
+      <div class="a"><code>mcp-registry publish ./my-tool</code>。CLI 会工具目录中的 <code>mcp_registry.json</code>，验证后提交 PR 到注册表仓库。审核合并后全球可用。</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">支持哪些 MCP 客户端？</div>
+      <div class="a">任何实现了 MCP 协议的客户端。Claude Desktop、Cursor、Windsurf、VS Code (GitHub Copilot)、自定义 MCP Agent 等。install 命令自动写入 <code>~/.config/mcp/servers.json</code>。</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">路线图下一步是什么？</div>
+      <div class="a">Phase 3: GitHub Pages 文档站 (进行中)。Phase 4: install 命令完整实现 (自动 pip + 配置注入)。Phase 5: OAuth 集成 (GitHub 登录发布)。Phase 6: 社区生态 (评分、信任、私有注册表)。</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <p>MCP Registry · Open Source (MIT) · <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank">GitHub</a></p>
+    <p style="font-size:12px;color:rgba(255,255,255,.2);margin-top:8px">Built for the MCP ecosystem — Agent 的 npm</p>
+  </div>
+</footer>
+
+</body>
+</html>

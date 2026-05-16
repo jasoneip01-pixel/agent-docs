@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<title>Skill Surface Diff — Agent Capability Boundary Control</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+  --expand:#f97316;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.03) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 50%,rgba(239,68,68,.03) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:14px;line-height:1.7;padding:0;
+}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:220px;z-index:10;
+  background:rgba(0,0,0,.4);border-right:1px solid var(--line);
+  padding:20px 0;overflow-y:auto;
+}
+.sidebar .logo{padding:0 18px 16px;font-size:15px;font-weight:700;border-bottom:1px solid var(--line);margin-bottom:10px}
+.sidebar .logo span{color:var(--accent)}
+.sidebar a{
+  display:block;padding:8px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .1s;border-left:2px solid transparent;
+}
+.sidebar a:hover{color:var(--text);background:rgba(255,255,255,.02);border-left-color:var(--accent)}
+.sidebar a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(77,208,225,.05)}
+.sidebar a.sub{padding-left:30px;font-size:11px}
+.content{margin-left:220px;padding:0;max-width:900px}
+section{padding:50px 50px 40px;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:none}
+h2{font-size:22px;font-weight:700;margin-bottom:16px;letter-spacing:-.3px}
+h2 .num{color:var(--accent);margin-right:8px}
+h3{font-size:16px;font-weight:600;margin:24px 0 10px}
+h4{font-size:13px;font-weight:600;margin:16px 0 6px;color:var(--accent)}
+p{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.8}
+p strong{color:var(--text)}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px;color:var(--accent)}
+pre{
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  line-height:1.7;overflow-x:auto;margin:10px 0;color:var(--text);
+}
+pre .c{color:rgba(255,255,255,.3);font-style:italic}
+pre .k{color:var(--accent)}
+pre .s{color:var(--pass)}
+pre .e{color:var(--fail)}
+pre .w{color:var(--warn)}
+pre .v{color:var(--blue)}
+pre .m{color:var(--purple)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text)}
+td .tag{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.12);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.tag.o{background:rgba(249,115,22,.12);color:var(--expand)}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;transition:all .2s;
+}
+.card:hover{border-color:rgba(148,200,255,.15)}
+.card h4{color:var(--text);font-size:13px;margin:0 0 6px}
+.card p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}
+.card .big{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:2px}
+.arch-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;margin:10px 0;
+}
+.arch-box h4{color:var(--text);font-size:13px;margin:0 0 8px}
+.arch-item{padding:5px 0;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.arch-item:last-child{border-bottom:none}
+.arch-item .name{font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px}
+.arch-item .desc{color:var(--muted);font-size:11px;margin-left:4px}
+.arch-item .arrow{color:rgba(255,255,255,.15);margin:0 4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.callout{
+  padding:12px 16px;border-radius:8px;font-size:12px;line-height:1.6;margin:14px 0;
+  border-left:3px solid;
+}
+.callout.blue{background:rgba(77,208,225,.06);border-color:var(--accent);color:var(--muted)}
+.callout.blue strong{color:var(--accent)}
+.callout.green{background:rgba(74,222,128,.06);border-color:var(--pass);color:var(--muted)}
+.callout.green strong{color:var(--pass)}
+.callout.red{background:rgba(239,68,68,.06);border-color:var(--fail);color:var(--muted)}
+.callout.red strong{color:var(--fail)}
+.callout.purple{background:rgba(167,139,250,.06);border-color:var(--purple);color:var(--muted)}
+.callout.purple strong{color:var(--purple)}
+.callout.orange{background:rgba(249,115,22,.06);border-color:var(--expand);color:var(--muted)}
+.callout.orange strong{color:var(--expand)}
+.hero{
+  padding:60px 50px 40px;border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse at 60% 30%,rgba(77,208,225,.06) 0%,transparent 50%);
+}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:14px;color:var(--muted);margin-bottom:16px}
+.hero .tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero .tags .t{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.hero .tags .t.s{background:rgba(239,68,68,.1);color:var(--fail);border:1px solid rgba(239,68,68,.2)}
+.hero .tags .t.c{background:rgba(74,222,128,.1);color:var(--pass);border:1px solid rgba(74,222,128,.2)}
+.hero .tags .t.m{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.hero .tags .t.o{background:rgba(249,115,22,.1);color:var(--expand);border:1px solid rgba(249,115,22,.2)}
+.hero .badges{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+ul,ol{font-size:13px;color:var(--muted);line-height:1.8;padding-left:20px;margin:8px 0}
+li{margin-bottom:3px}
+li strong{color:var(--text)}
+blockquote{
+  border-left:2px solid var(--line);padding:8px 14px;margin:12px 0;
+  font-size:13px;color:var(--muted);font-style:italic;
+  background:var(--panel);border-radius:0 6px 6px 0;
+}
+blockquote strong{color:var(--text);font-style:normal}
+.install-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 20px;margin:12px 0;text-align:center;
+}
+.install-box code{font-size:16px;background:rgba(77,208,225,.08);padding:6px 14px;border-radius:6px;color:var(--accent);border:1px solid rgba(77,208,225,.15)}
+.metric-row{display:flex;gap:16px;margin:14px 0;flex-wrap:wrap}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;flex:1;min-width:100px;text-align:center}
+.metric .val{font-size:22px;font-weight:700;color:var(--accent)}
+.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.status-done{color:var(--pass);font-size:13px}
+.status-wip{color:var(--warn);font-size:13px}
+@media(max-width:1024px){
+  .content{max-width:100%}
+  section{padding:40px 30px}
+  .hero{padding:40px 30px}
+}
+@media(max-width:834px){
+  .sidebar{width:180px;font-size:11px}
+  .sidebar a{padding:6px 14px;font-size:11px}
+  .sidebar a.sub{padding-left:24px;font-size:10px}
+  .content{margin-left:180px}
+  section{padding:32px 24px}
+  .hero{padding:32px 24px}
+  .hero h1{font-size:26px}
+  .three-col,.card-grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .content{margin-left:0}
+  .hero{padding:28px 20px}
+  .hero h1{font-size:24px}
+  .hero .sub{font-size:12px}
+  .hero .tags .t{font-size:10px;padding:4px 10px}
+  section{padding:28px 20px}
+  h2{font-size:19px}
+  h3{font-size:15px}
+  p,li,blockquote{font-size:13px;line-height:1.75}
+  .two-col,.card-grid,.card-grid-3,.three-col{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:11px}
+  th,td{padding:7px 9px}
+  pre{font-size:10.5px;padding:10px 12px}
+  .arch-box{padding:12px 14px}
+  .arch-item{font-size:11px}
+  .callout{font-size:12px;padding:10px 14px}
+  .sidebar a,button{min-height:44px;display:flex;align-items:center}
+  .metric-row{gap:8px}
+  .metric{min-width:70px}
+}
+@media(max-width:430px){
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .hero{padding:24px 16px}
+  .hero h1{font-size:21px}
+  .hero .sub{font-size:11px}
+  .hero .tags{gap:5px}
+  .hero .tags .t{font-size:9px;padding:3px 8px}
+  section{padding:24px 16px}
+  h2{font-size:17px}
+  h2 .num{font-size:15px;margin-right:5px}
+  h3{font-size:14px}
+  p,li{font-size:12px;line-height:1.7}
+  .card{padding:12px 14px}
+  .card h4{font-size:12.5px}
+  .card p{font-size:11px}
+  pre{font-size:9.5px;padding:10px 12px}
+  table{font-size:10.5px}
+  th,td{padding:5px 7px}
+  code{font-size:10.5px}
+  ol,ul{padding-left:16px}
+  .arch-box{padding:10px 12px}
+  .arch-item{font-size:10.5px}
+  .arch-item .name{font-size:10px}
+  .callout{font-size:11px;padding:10px 12px}
+  .sidebar a,button{min-height:44px}
+  .metric-row{gap:6px}
+  .metric{min-width:60px;padding:8px 10px}
+  .metric .val{font-size:18px}
+}
+@media(max-width:375px){
+  .hero h1{font-size:18px}
+  .hero .sub{font-size:10.5px}
+  h2{font-size:15.5px}
+  h3{font-size:13.5px}
+  p,li{font-size:11.5px}
+  pre{font-size:9px;padding:8px 10px}
+  table{font-size:9.5px;word-break:break-word}
+  th,td{padding:4px 5px}
+  .hero{padding:20px 12px}
+  section{padding:20px 12px}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar" id="sidebar">
+  <div class="logo">Surface <span>Diff</span></div>
+  <a href="#product-status">产品状态</a>
+  <a href="#first-principles">一、第一性原理</a>
+  <a href="#quickstart">快速上手</a>
+  <a href="#features">功能列表</a>
+  <a href="#architecture">技术架构</a>
+  <a href="#cli">CLI 命令</a>
+  <a href="#roadmap">路线图</a>
+  <a href="#competitive">竞争定位</a>
+</nav>
+
+<div class="content">
+
+<div class="hero">
+  <h1>Skill <span>Surface Diff</span></h1>
+  <div class="sub">Agent Skill 变更面差异分析 — 这个版本多了什么权限？</div>
+  <div class="tags">
+    <span class="t s">🔴 Manifest Injection</span>
+    <span class="t s">🔴 Permission Escalation</span>
+    <span class="t m">🟣 Tool Schema Drift</span>
+    <span class="t o">🟠 Attack Surface</span>
+    <span class="t c">🟢 CI/CD Gate</span>
+  </div>
+  <div class="badges">
+    <span class="tag u">v0.2.0</span>
+    <span class="tag c">4 analyzers</span>
+    <span class="tag g">6 CLI commands</span>
+    <span class="tag n">4 phases planned</span>
+    <span class="tag y">pip install</span>
+  </div>
+</div>
+
+<!-- ====== PRODUCT STATUS ====== -->
+<section id="product-status">
+  <h2><span class="num">⬡</span>产品状态</h2>
+
+  <div class="install-box">
+    <code>pip install skill-surface-diff</code>
+    <p style="margin-top:8px;font-size:11px">Python 3.10+ · Open Source (MIT) · <code>skill-surface-diff diff ./old/ ./new/</code></p>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="val">4</div><div class="label">Analyzers</div></div>
+    <div class="metric"><div class="val">6</div><div class="label">CLI Commands</div></div>
+    <div class="metric"><div class="val">12+</div><div class="label">Diff Rules</div></div>
+    <div class="metric"><div class="val">4</div><div class="label">Output Formats</div></div>
+    <div class="metric"><div class="val">2</div><div class="label">Phases Done</div></div>
+    <div class="metric"><div class="val">&lt;50ms</div><div class="label">Typical Diff</div></div>
+  </div>
+
+  <div class="three-col">
+    <div class="card">
+      <h4>✅ Phase 1 — Core Diff CLI</h4>
+      <p><code>skill-surface-diff diff</code> · 4 analyzers · SARIF/JSON/HTML/Markdown · baseline loading</p>
+    </div>
+    <div class="card">
+      <h4>✅ Phase 2 — Policy Gate + Scoring</h4>
+      <p>Risk score formula · Rule-based blocking · diff-policy.yaml · CI exit codes</p>
+    </div>
+    <div class="card">
+      <h4>📦 Phase 3 — CI/CD Integration</h4>
+      <p>GitHub Action · SARIF upload · Slack/Teams notification · auto-PR comment</p>
+    </div>
+    <div class="card">
+      <h4>📦 Phase 4 — Enterprise</h4>
+      <p>SARIF export · Policy-as-code · RBAC · Audit trail · Multi-repo dashboard</p>
+    </div>
+    <div class="card">
+      <h4>🔒 2轮安全审计完成</h4>
+      <p>Codex 对抗式审计覆盖 Manifest parser、Script analyzer、policy bypass</p>
+    </div>
+    <div class="card">
+      <h4>📦 CI/CD 就绪</h4>
+      <p>test.yml (3.10/3.11/3.12) + release.yml (PyPI) + .github/workflows/ 已就绪</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 一、第一性原理 ====== -->
+<section id="first-principles">
+  <h2><span class="num">01</span>第一性原理：为什么需要变更面分析</h2>
+  <p><strong>一个安全版本不保证下一个版本安全。</strong></p>
+  <p>Agent Skill 是 versioned bundle。v1.8.1 是安全的，v1.8.2 可以只改一行就破坏一切。</p>
+
+  <blockquote><strong>问题：</strong>你怎么知道一个 Skill 版本更新后，Agent 的攻击面没有扩大？</blockquote>
+
+  <p>传统解决方案是每次完整扫描。但完整扫描没有基线，你看到的是"这个 skill 有不安全的东西"，而不是"这个 <strong>版本</strong> 新增了什么不安全的东西"。</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>维度</th><th>静态扫描（Skill Scanner）</th><th><strong>变更面分析（Surface Diff）</strong></th></tr>
+    <tr><td>视角</td><td>单个版本绝对风险</td><td>版本间相对风险增量</td></tr>
+    <tr><td>结论</td><td>"SKILL.md 有注入"</td><td>"v1.8.2 新增了 system_prompt_append，v1.8.1 没有"</td></tr>
+    <tr><td>PR 集成</td><td>扫描 → 阻塞</td><td>diff 基线 → 精确判定增量 → 阻塞有问题的增量</td></tr>
+    <tr><td>假阳性处理</td><td>花时间排查已知问题</td><td>只关心新增问题，已存在的不再报警</td></tr>
+  </table>
+  </div>
+
+  <h3>推导链</h3>
+  <ol>
+    <li><strong>Agent Skill = 可版本化的能力包</strong>（manifest + scripts + instructions + tool schemas）</li>
+    <li>每个版本更新都可能<strong>无意或有意地</strong>扩大攻击面</li>
+    <li>单版本扫描只能回答"这个 skill 有没有问题"，<strong>不能回答"这个版本有没有让事情变糟"</strong></li>
+    <li>版本变更检测需要：<strong>基线扫描 → 增量 diff → 规则判定</strong></li>
+  </ol>
+
+  <div class="callout blue">
+    <strong>核心认知：</strong>Agent 的安全不是一次性的。它是一个<strong>边界合约</strong>——每次更新都需要检查合约是否被篡改。Skill Surface Diff 做的是<strong>合约差异审计</strong>：你同意的能力边界是什么，这个版本是否越界了。
+  </div>
+
+  <h3>为什么这比单次扫描更重要</h3>
+  <ul>
+    <li><strong>PR 审查者不能读每个 SKILL.md</strong> — 但可以看一个结构化的 diff 报告："新增网络权限"、"新增高危工具"、"新增指令注入"</li>
+    <li><strong>语义版本不等于安全版本</strong> — patch 版本可以偷偷加 data_exfiltration。谁检查？</li>
+    <li><strong>供应链攻击是在版本间发生的</strong> — 一个被攻陷的 maintainer 账号可以 push 一个 v1.8.2 的新 commit。diff 能抓到这个。</li>
+  </ul>
+</section>
+
+<!-- ====== 快速上手 ====== -->
+<section id="quickstart">
+  <h2><span class="num">02</span>快速上手</h2>
+
+  <h3>安装</h3>
+  <pre><span class="k">$</span> pip install skill-surface-diff</pre>
+
+  <h3>对比两个版本</h3>
+  <pre><span class="k">$</span> skill-surface-diff diff <span class="v">old-version/</span> <span class="v">new-version/</span></pre>
+
+  <p>真实输出：</p>
+  <pre style="font-size:9.5px">╭─────────────────────────── Skill Surface Diff ─────────────────────────────╮
+│ <span class="e">✖ DIFF BLOCKED</span>                                                             │
+╰──────────────────────────────────── v0.2.0 ────────────────────────────────╯
+  Baseline:    old-version/
+  Target:      new-version/
+  Policy:      default
+  Duration:    48ms
+  Diff checks: 12
+<span class="e">3 critical</span> · <span class="w">4 warnings</span> · <span class="s">5 unchanged</span>
+
+Blocked by: permission.expansion, manifest.injection, tool_schema.risk_added
+
+  ID        Severity   Title                      File
+ ──────────────────────────────────────────────────────────────────────────────
+  <span class="e">PID001</span>   <span class="e">critical</span>  system_prompt_append        NEW in SKILL.md
+                     (new field)
+  <span class="e">PID002</span>   <span class="e">critical</span>  network:true added         NEW in SKILL.md
+                     (new capability)
+  <span class="e">PID003</span>   <span class="e">critical</span>  Data exfiltration via      scripts/init.sh
+                     curl in new script
+  <span class="w">TSD001</span>   <span class="w">warning</span>   Tool schema changed:       tools/process.yaml
+                     new required param
+  <span class="w">PSD001</span>   <span class="w">warning</span>   Permission section         SKILL.md
+                     expanded
+  <span class="w">ISD001</span>   <span class="w">warning</span>   Instruction added:         instructions/prompt.md
+                     "never mention fees"</pre>
+
+  <h3>输出格式</h3>
+  <pre><span class="k">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span> <span class="flag">--format</span> <span class="s">sarif</span> <span class="flag">-o</span> <span class="s">diff.sarif</span>
+<span class="k">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span> <span class="flag">--format</span> <span class="s">json</span>
+<span class="k">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span> <span class="flag">--format</span> <span class="s">html</span> <span class="flag">-o</span> <span class="s">diff-report.html</span></pre>
+
+  <h3>使用基线缓存</h3>
+  <pre><span class="k">$</span> skill-surface-diff scan <span class="v">./skill/</span> <span class="flag">--save-baseline</span>
+  <span class="c"># Stores baseline.json in .skill-surface/baseline/</span>
+<span class="k">$</span> skill-surface-diff diff <span class="flag">--baseline</span> <span class="s">v1.8.1</span> <span class="v">./skill-v1.8.2/</span>
+  <span class="c"># Loads cached baseline, diffs against new version</span></pre>
+</section>
+
+<!-- ====== 功能 ====== -->
+<section id="features">
+  <h2><span class="num">03</span>功能一览</h2>
+
+  <h3>4 个分析维度，12+ 差异检测规则</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>分析器</th><th>检测内容</th><th>规则示例</th><th>严重度</th></tr>
+    <tr><td><strong>Manifest Diff</strong></td><td>新增/删除的 manifest 字段、unsupported fields、capability 声明变更</td><td>PID001-5</td><td><span class="tag n">CRIT</span></td></tr>
+    <tr><td><strong>Script Diff</strong></td><td>新增/删除/修改的脚本、新增 exfiltration、权限变更</td><td>PID003, SCD001-3</td><td><span class="tag n">CRIT</span></td></tr>
+    <tr><td><strong>Permission Diff</strong></td><td>网络权限变更、文件访问范围变更、tool permission 增减</td><td>PSD001-3</td><td><span class="tag w">WARN</span></td></tr>
+    <tr><td><strong>Tool Schema Diff</strong></td><td>新增/删除的工具、参数变更、危险操作声明</td><td>TSD001-4</td><td><span class="tag w">WARN</span></td></tr>
+  </table>
+  </div>
+
+  <h3>核心原语</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔍 基线扫描</h4>
+      <p><code>skill-surface-diff scan ./skill/ --save-baseline</code><br>为 skill 创建初始能力基线快照，存储到 <code>.skill-surface/baseline/</code></p>
+    </div>
+    <div class="card">
+      <h4>📊 差异分析</h4>
+      <p><code>skill-surface-diff diff --baseline v1.0 ./v1.1/</code><br>与基线对比，标记所有新增、删除、修改的能力边界变更</p>
+    </div>
+    <div class="card">
+      <h4>⚖️ 风险评分</h4>
+      <p>加权公式：权限新增 × 40 + 注入 × 15 + 脚本变更 × 8 + schema 变更 × 5 + 网络扩展 × 5</p>
+    </div>
+    <div class="card">
+      <h4>🚫 规则阻断</h4>
+      <p>规则优先于风险评分。<code>permission.expansion: block</code> 直接阻断——评分只用于优先级，不做决策</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 技术架构 ====== -->
+<section id="architecture">
+  <h2><span class="num">04</span>技术架构</h2>
+
+  <div class="callout purple">
+    <strong>核心原语：Surface Diff Engine</strong><br>
+    <code>baseline = Surface.extract(skill@v1.8.1)</code><br>
+    <code>current  = Surface.extract(skill@v1.8.2)</code><br>
+    <code>deltas   = SurfaceDiff.compare(baseline, current)</code><br>
+    if delta adds: prompt_override / data_exfiltration / new_high_risk_tool / network_egress → <strong>block merge</strong>
+  </div>
+
+  <h3>代码结构</h3>
+  <pre>skill_surface_diff/
+├── <span class="k">cli.py</span>              # Click CLI (6 commands, 4 formats)
+├── <span class="k">engine.py</span>           # Diff orchestrator + policy verdict
+├── <span class="k">surface.py</span>          # Surface extraction + baseline serialization
+├── <span class="k">policy.py</span>           # diff-policy.yaml loader + rule evaluator
+├── <span class="k">report.py</span>           # SARIF/JSON/HTML/Markdown output
+├── <span class="k">formatter.py</span>        # CLI terminal output formatting
+└── <span class="k">scanner/</span>
+    ├── <span class="k">analyzers/</span>
+    │   ├── <span class="k">manifest.py</span>     # Manifest field diff
+    │   ├── <span class="k">script.py</span>       # Script content + hash diff
+    │   ├── <span class="k">permission.py</span>   # Permission section diff
+    │   └── <span class="k">tool_schema.py</span>  # Tool schema structural diff
+    ├── <span class="k">scanner.py</span>        # Directory traversal + file scanning
+    └── <span class="k">cache.py</span>          # Baseline JSON serialization/deserialization</pre>
+
+  <h3>Diff 流程</h3>
+  <div class="arch-box">
+    <div class="arch-item"><span class="name">Step 1</span> <span class="arrow">→</span> <span class="desc">Surface.extract(old/) — 扫描旧版本，提取能力面</span></div>
+    <div class="arch-item"><span class="name">Step 2</span> <span class="arrow">→</span> <span class="desc">Surface.extract(new/) — 扫描新版本</span></div>
+    <div class="arch-item"><span class="name">Step 3</span> <span class="arrow">→</span> <span class="desc">ManifestAnalyzer.diff(old, new) — field + capability 级别差异</span></div>
+    <div class="arch-item"><span class="name">Step 3a</span> <span class="arrow">→</span> <span class="desc">ScriptAnalyzer.diff(old, new) — 新增/删除/修改脚本检测</span></div>
+    <div class="arch-item"><span class="name">Step 3b</span> <span class="arrow">→</span> <span class="desc">PermissionAnalyzer.diff(old, new) — 网络/文件/工具权限差异</span></div>
+    <div class="arch-item"><span class="name">Step 3c</span> <span class="arrow">→</span> <span class="desc">ToolSchemaAnalyzer.diff(old, new) — schema 结构差异</span></div>
+    <div class="arch-item"><span class="name">Step 4</span> <span class="arrow">→</span> <span class="desc">Engine.evaluate(deltas, policy) — 规则判定 + 风险评分</span></div>
+    <div class="arch-item"><span class="name">Step 5</span> <span class="arrow">→</span> <span class="desc">Report.build(deltas, verdict) — 输出</span></div>
+  </div>
+
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Phase 3: CI/CD</h4>
+      <div class="arch-item"><span class="name">github_action</span> <span class="arrow">→</span> PR 触发 diff 扫描</div>
+      <div class="arch-item"><span class="name">sarif_upload</span> <span class="arrow">→</span> GitHub Code Scanning</div>
+      <div class="arch-item"><span class="name">pr_comment</span> <span class="arrow">→</span> 自动 PR 差异注释</div>
+      <div class="arch-item"><span class="name">slack_notify</span> <span class="arrow">→</span> Slack webhook 通知</div>
+    </div>
+    <div class="arch-box">
+      <h4>Phase 4: Enterprise</h4>
+      <div class="arch-item"><span class="name">sarif_export</span> <span class="arrow">→</span> 结构化 SARIF 输出</div>
+      <div class="arch-item"><span class="name">policy_as_code</span> <span class="arrow">→</span> Rego/YAML policy 文件</div>
+      <div class="arch-item"><span class="name">rbac</span> <span class="arrow">→</span> 角色权限控制</div>
+      <div class="arch-item"><span class="name">multi_repo</span> <span class="arrow">→</span> 跨仓库差异仪表盘</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== CLI ====== -->
+<section id="cli">
+  <h2><span class="num">05</span>CLI 命令参考</h2>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令</th><th>用途</th><th>关键参数</th></tr>
+    <tr><td><code>diff</code></td><td>对比两个版本的能力面差异</td><td>--format, -o, --policy, --baseline</td></tr>
+    <tr><td><code>scan</code></td><td>扫描 skill 生成能力基线</td><td>--save-baseline, --tag</td></tr>
+    <tr><td><code>baselines</code></td><td>列出所有已存储的基线</td><td>—</td></tr>
+    <tr><td><code>check</code></td><td>检查单个版本是否符合 policy</td><td>--policy, --format</td></tr>
+    <tr><td><code>policy</code></td><td>列出/验证 diff policy</td><td>list, validate</td></tr>
+    <tr><td><code>report</code></td><td>生成差异报告</td><td>--format, -o, --template</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ====== 路线图 ====== -->
+<section id="roadmap">
+  <h2><span class="num">06</span>路线图</h2>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Phase</th><th>功能</th><th>状态</th><th>ETA</th></tr>
+    <tr><td>1</td><td>Core Diff CLI — 4 个分析器、4 种输出格式、基线缓存</td><td><span class="tag y">✅ Done</span></td><td>—</td></tr>
+    <tr><td>2</td><td>Policy Gate — 规则引擎、风险评分公式、diff-policy.yaml</td><td><span class="tag y">✅ Done</span></td><td>—</td></tr>
+    <tr><td>3</td><td>CI/CD 集成 — GitHub Action、SARIF 上传、自动 PR 注释、Slack 通知</td><td><span class="tag w">📦 Planned</span></td><td>Q3 2026</td></tr>
+    <tr><td>4</td><td>Enterprise — Policy-as-code (Rego)、RBAC、审计追踪、多仓库仪表盘</td><td><span class="tag w">📦 Planned</span></td><td>Q4 2026</td></tr>
+  </table>
+  </div>
+
+  <h3>Phase 3 详细规划</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔄 GitHub Action</h4>
+      <p>PR 触发 → <code>skill-surface-diff diff --baseline <parent></code> → SARIF → 上传 → 阻断</p>
+    </div>
+    <div class="card">
+      <h4>💬 Slack 通知</h4>
+      <p>阻断安全差异 → Slack channel 自动推送 summary card：新增权限、受影响文件、建议措施</p>
+    </div>
+    <div class="card">
+      <h4>📋 PR 自动注释</h4>
+      <p>每次 diff 自动在 PR 添加表格注释：新增/删除/修改的能力项。审查者一目了然。</p>
+    </div>
+    <div class="card">
+      <h4>🔬 SARIF 深度集成</h4>
+      <p>GitHub Code Scanning 原生支持。差异结果可以出现在 Security 标签页。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 竞争定位 ====== -->
+<section id="competitive">
+  <h2><span class="num">07</span>竞争定位</h2>
+
+  <p><strong>不做静态扫描的竞争，做「版本合约审计」。</strong></p>
+
+  <div class="callout blue">
+    <strong>Snyk scans whether a skill is toxic.</strong><br>
+    <strong>Skill Surface Diff proves whether a skill version expanded the agent's authority beyond policy.</strong>
+  </div>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>能力</th><th>Snyk mcp-scan</th><th>Promptfoo</th><th>Skill Scanner</th><th><strong>Surface Diff</strong></th></tr>
+    <tr><td>单版本扫描</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>版本间能力差异</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>Tool Schema Diff</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>Manifest 字段变更</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>Policy-as-code Gate</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag y">✅</span></td><td><span class="tag u">✅ diff policy</span></td></tr>
+    <tr><td>CI/CD 集成</td><td><span class="tag n">—</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag w">📦 Planned</span></td></tr>
+    <tr><td>SARIF 输出</td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td></tr>
+  </table>
+  </div>
+
+  <h3>差异化核心</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔄 唯一做版本能力差异</h4>
+      <p>Snyk 和 Skill Scanner 检查一个版本是否危险。我们检查这个版本是否比上一个版本更危险——这是 PR 场景的真实需求。</p>
+    </div>
+    <div class="card">
+      <h4>📐 Tool Schema 结构 diff</h4>
+      <p>工具声明从只读变成读写？参数从 optional 变成 required？新工具加到了 payment 命名空间？Schema diff 是其他工具不做的。</p>
+    </div>
+    <div class="card">
+      <h4>⚙️ 规则优先于评分</h4>
+      <p>permission.expansion: block → 直接阻断。风险评分只用于排优先级，不用于决策。Policy-as-code 才是 gate。</p>
+    </div>
+    <div class="card">
+      <h4>🧩 可组合的基线</h4>
+      <p>基线可缓存、可版本化、可复用。适配 Skill Registry 场景：从 registry 拉基线，本地 diff，一致的行为。</p>
+    </div>
+  </div>
+
+  <h3>与 Skill Scanner 的关系</h3>
+  <div class="callout green">
+    <strong>互补，不是替代。</strong><br><br>
+    <code>skill-scanner scan ./new-skill/</code> → 这个 skill 是否包含恶意代码？<br>
+    <code>skill-surface-diff diff v1.8.1/ v1.8.2/</code> → 这个版本的攻击面是否比上一版扩大了？<br><br>
+    两者一起用：单版本安全 + 版本差异审计 = 完整的 Agent Skill 供应链安全。
+  </div>
+</section>
+
+</div>
+
+<script>
+const sections=document.querySelectorAll('section[id]');
+const links=document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll',()=>{
+  let current='';
+  sections.forEach(s=>{
+    const top=s.getBoundingClientRect().top;
+    if(top<200) current=s.id;
+  });
+  links.forEach(l=>{
+    l.classList.toggle('active',l.getAttribute('href')==='#'+current);
+  });
+});
+</script>
+</body>
+</html>

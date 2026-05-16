@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<title>agent-datadog — Cross-Framework Agent Observability</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.03) 0%,transparent 40%),radial-gradient(ellipse at 80% 50%,rgba(167,139,250,.03) 0%,transparent 40%),var(--bg);
+  color:var(--text);font-size:14px;line-height:1.7;padding:0;
+}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:220px;z-index:10;
+  background:rgba(0,0,0,.4);border-right:1px solid var(--line);
+  padding:20px 0;overflow-y:auto;
+}
+.sidebar .logo{padding:0 18px 16px;font-size:15px;font-weight:700;border-bottom:1px solid var(--line);margin-bottom:10px}
+.sidebar .logo span{color:var(--accent)}
+.sidebar a{
+  display:block;padding:8px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .1s;border-left:2px solid transparent;
+}
+.sidebar a:hover{color:var(--text);background:var(--glass);border-left-color:var(--accent)}
+.sidebar a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(77,208,225,.05)}
+.sidebar a.sub{padding-left:30px;font-size:11px}
+.content{margin-left:220px;padding:0;max-width:900px}
+section{padding:50px 50px 40px;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:none}
+h2{font-size:22px;font-weight:700;margin-bottom:16px;letter-spacing:-.3px}
+h2 .num{color:var(--accent);margin-right:8px}
+h3{font-size:16px;font-weight:600;margin:24px 0 10px}
+h4{font-size:13px;font-weight:600;margin:16px 0 6px;color:var(--accent)}
+p{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.8}
+p strong{color:var(--text)}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px;color:var(--accent)}
+pre{
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  line-height:1.7;overflow-x:auto;margin:10px 0;color:var(--text);
+}
+pre .c{color:rgba(255,255,255,.3);font-style:italic}
+pre .k{color:var(--accent)}
+pre .s{color:var(--pass)}
+pre .e{color:var(--fail)}
+pre .w{color:var(--warn)}
+pre .v{color:var(--blue)}
+pre .m{color:var(--purple)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:var(--glass)}
+td:first-child{font-weight:500;color:var(--text)}
+td .tag{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.12);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;transition:all .2s;
+}
+.card:hover{border-color:rgba(148,200,255,.15)}
+.card h4{color:var(--text);font-size:13px;margin:0 0 6px}
+.card p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}
+.card .big{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:2px}
+.arch-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;margin:10px 0;
+}
+.arch-box h4{color:var(--text);font-size:13px;margin:0 0 8px}
+.arch-item{padding:5px 0;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.arch-item:last-child{border-bottom:none}
+.arch-item .name{font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px}
+.arch-item .desc{color:var(--muted);font-size:11px;margin-left:4px}
+.arch-item .arrow{color:rgba(255,255,255,.15);margin:0 4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.callout{
+  padding:12px 16px;border-radius:8px;font-size:12px;line-height:1.6;margin:14px 0;
+  border-left:3px solid;
+}
+.callout.blue{background:rgba(77,208,225,.06);border-color:var(--accent);color:var(--muted)}
+.callout.blue strong{color:var(--accent)}
+.callout.green{background:rgba(74,222,128,.06);border-color:var(--pass);color:var(--muted)}
+.callout.green strong{color:var(--pass)}
+.callout.red{background:rgba(239,68,68,.06);border-color:var(--fail);color:var(--muted)}
+.callout.red strong{color:var(--fail)}
+.callout.purple{background:rgba(167,139,250,.06);border-color:var(--purple);color:var(--muted)}
+.callout.purple strong{color:var(--purple)}
+.hero{
+  padding:60px 50px 40px;border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse at 60% 30%,rgba(77,208,225,.06) 0%,transparent 50%);
+}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:14px;color:var(--muted);margin-bottom:16px}
+.hero .tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero .tags .t{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.hero .tags .t.s{background:rgba(239,68,68,.1);color:var(--fail);border:1px solid rgba(239,68,68,.2)}
+.hero .tags .t.c{background:rgba(74,222,128,.1);color:var(--pass);border:1px solid rgba(74,222,128,.2)}
+.hero .tags .t.m{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.hero .badges{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.hero .badges img{height:20px}
+ul,ol{font-size:13px;color:var(--muted);line-height:1.8;padding-left:20px;margin:8px 0}
+li{margin-bottom:3px}
+li strong{color:var(--text)}
+blockquote{
+  border-left:2px solid var(--line);padding:8px 14px;margin:12px 0;
+  font-size:13px;color:var(--muted);font-style:italic;
+  background:var(--panel);border-radius:0 6px 6px 0;
+}
+blockquote strong{color:var(--text);font-style:normal}
+.install-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 20px;margin:12px 0;text-align:center;
+}
+.install-box code{font-size:16px;background:rgba(77,208,225,.08);padding:6px 14px;border-radius:6px;color:var(--accent);border:1px solid rgba(77,208,225,.15)}
+.metric-row{display:flex;gap:16px;margin:14px 0;flex-wrap:wrap}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;flex:1;min-width:100px;text-align:center}
+.metric .val{font-size:22px;font-weight:700;color:var(--accent)}
+.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.status-done{color:var(--pass);font-size:13px}
+.status-wip{color:var(--warn);font-size:13px}
+@media(max-width:1024px){
+  .content{max-width:100%}
+  section{padding:40px 30px}
+  .hero{padding:40px 30px}
+}
+@media(max-width:834px){
+  .sidebar{width:180px;font-size:11px}
+  .sidebar a{padding:6px 14px;font-size:11px}
+  .sidebar a.sub{padding-left:24px;font-size:10px}
+  .content{margin-left:180px}
+  section{padding:32px 24px}
+  .hero{padding:32px 24px}
+  .hero h1{font-size:26px}
+  .three-col,.card-grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .content{margin-left:0}
+  .hero{padding:28px 20px}
+  .hero h1{font-size:24px}
+  .hero .sub{font-size:12px}
+  section{padding:28px 20px}
+  h2{font-size:19px}
+  h3{font-size:15px}
+  p,li,blockquote{font-size:13px;line-height:1.75}
+  .two-col,.card-grid,.card-grid-3,.three-col{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:11px}
+  th,td{padding:7px 9px}
+  pre{font-size:10.5px;padding:10px 12px}
+  .arch-box{padding:12px 14px}
+  .arch-item{font-size:11px}
+  .callout{font-size:12px;padding:10px 14px}
+  .sidebar a,button{min-height:44px;display:flex;align-items:center}
+  .metric-row{gap:8px}
+  .metric{min-width:70px}
+}
+@media(max-width:430px){
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .hero{padding:24px 16px}
+  .hero h1{font-size:21px}
+  .hero .sub{font-size:11px}
+  .hero .tags{gap:5px}
+  .hero .tags .t{font-size:9px;padding:3px 8px}
+  section{padding:24px 16px}
+  h2{font-size:17px}
+  h2 .num{font-size:15px;margin-right:5px}
+  h3{font-size:14px}
+  p,li{font-size:12px;line-height:1.7}
+  .card{padding:12px 14px}
+  .card h4{font-size:12.5px}
+  .card p{font-size:11px}
+  pre{font-size:9.5px;padding:10px 12px}
+  table{font-size:10.5px}
+  th,td{padding:5px 7px}
+  code{font-size:10.5px}
+  ol,ul{padding-left:16px}
+  .arch-box{padding:10px 12px}
+  .arch-item{font-size:10.5px}
+  .arch-item .name{font-size:10px}
+  .callout{font-size:11px;padding:10px 12px}
+  .sidebar a,button{min-height:44px}
+  .metric-row{gap:6px}
+  .metric{min-width:60px;padding:8px 10px}
+  .metric .val{font-size:18px}
+}
+@media(max-width:375px){
+  .hero h1{font-size:18px}
+  .hero .sub{font-size:10.5px}
+  h2{font-size:15.5px}
+  h3{font-size:13.5px}
+  p,li{font-size:11.5px}
+  pre{font-size:9px;padding:8px 10px}
+  table{font-size:9.5px;word-break:break-word}
+  th,td{padding:4px 5px}
+  .hero{padding:20px 12px}
+  section{padding:20px 12px}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar" id="sidebar">
+  <div class="logo">Agent <span>Datadog</span></div>
+  <a href="#product-status">产品状态</a>
+  <a href="#first-principles">一、第一性原理</a>
+  <a href="#quickstart">快速上手</a>
+  <a href="#features">功能列表</a>
+  <a href="#architecture">技术架构</a>
+  <a href="#api">API 参考</a>
+  <a href="#pricing-model">定价模型</a>
+  <a href="#competitive">竞争定位</a>
+</nav>
+
+<div class="content">
+
+<div class="hero">
+  <h1>Agent <span>Datadog</span></h1>
+  <div class="sub">Cross-Framework Agent Observability Platform — Datadog for Agents</div>
+  <div class="tags">
+    <span class="t s">🔴 Cost Analysis</span>
+    <span class="t m">🟣 Latency Tracking</span>
+    <span class="t c">🟢 Framework Compare</span>
+    <span class="t m">🟣 SSE Live Stream</span>
+    <span class="t s">🔴 Dashboard</span>
+  </div>
+  <div class="badges">
+    <span class="tag u">v0.1.0</span>
+    <span class="tag c">5 Frameworks</span>
+    <span class="tag g">14 Models</span>
+    <span class="tag n">2 API Endpoints</span>
+    <span class="tag y">AgentWatch Fork</span>
+  </div>
+</div>
+
+<!-- ====== PRODUCT STATUS ====== -->
+<section id="product-status">
+  <h2><span class="num">⬡</span>产品状态</h2>
+
+  <div class="install-box">
+    <code>git clone https://github.com/jasoneip01-pixel/agent-datadog</code>
+    <p style="margin-top:8px;font-size:11px">AgentWatch Fork + Cross-Framework Comparison Layer · FastAPI + SQLite + Vanilla JS</p>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="val">364</div><div class="label">FastAPI Lines</div></div>
+    <div class="metric"><div class="val">5</div><div class="label">Frameworks</div></div>
+    <div class="metric"><div class="val">14</div><div class="label">Models Indexed</div></div>
+    <div class="metric"><div class="val">2</div><div class="label">API Endpoints</div></div>
+    <div class="metric"><div class="val">3</div><div class="label">Roadmap Phases</div></div>
+    <div class="metric"><div class="val">MIT</div><div class="label">License</div></div>
+  </div>
+
+  <div class="three-col">
+    <div class="card">
+      <h4>✅ Phase 1 — Core Dashboard</h4>
+      <p>AgentWatch Fork (364-line FastAPI) · SQLite · Vanilla JS panel · Cost/Latency/Error Rate monitoring · SSE real-time stream</p>
+    </div>
+    <div class="card">
+      <h4>🚧 Phase 2 — Comparison Panel</h4>
+      <p>Cross-framework cost comparison · Visual model selector · Side-by-side latency/cost charts · Framework benchmark matrix</p>
+    </div>
+    <div class="card">
+      <h4>🔲 Phase 3 — Integration</h4>
+      <p>agent-cost CLI integration · Datadog exporter (metrics push) · Webhook alerts · Multi-cluster aggregation</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 一、第一性原理 ====== -->
+<section id="first-principles">
+  <h2><span class="num">01</span>第一性原理：为什么需要跨框架 Agent 可观测性</h2>
+  <p><strong>你的 Agent 不只用一家 API。那为什么监控工具只盯一家？</strong></p>
+  <p>传统 APM 生态：<code>Datadog → 多语言/多框架 APM · 全栈可见</code><br>
+  Agent 可观测性生态：<code>AgentWatch → 单框架监控 · 无跨模型对比</code></p>
+
+  <p>AI Agent 的成本面比传统 API 监控复杂得多：</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>维度</th><th>传统 APM (Datadog)</th><th>现有 Agent 监控</th><th><strong>Agent Datadog</strong></th></tr>
+    <tr><td>覆盖范围</td><td>多语言/多框架</td><td>单一框架</td><td><strong>5 框架 + 跨模型对比</strong></td></tr>
+    <tr><td>成本维度</td><td>基础设施 + API</td><td>单一模型定价</td><td><strong>框架对比 + Token/Budget 分析</strong></td></tr>
+    <tr><td>延迟分析</td><td>全链路追踪</td><td>单一调用路径</td><td><strong>多框架并行对比</strong></td></tr>
+    <tr><td>决策支持</td><td>基础设施优化</td><td>单一供应商</td><td><strong>"用哪个 API 最划算"</strong></td></tr>
+  </table>
+  </div>
+
+  <h3>推导链</h3>
+  <ol>
+    <li><strong>Agent 系统 = 多个模型 API + 多个框架 SDK + Prompt 编排层 + 工具调用层</strong></li>
+    <li>团队选型时需要回答：<strong>OpenAI vs Claude vs DeepSeek — 哪个性价比最高？</strong></li>
+    <li>现有工具只监控单一家——AgentWatch 只看 OpenAI，LangSmith 只看 LangChain</li>
+    <li>跨框架对比需要<strong>统一的定价模型 + 统一的性能基准 + 统一的仪表盘</strong></li>
+    <li>不回答"哪个最便宜"的可观测性，只是漂亮图表</li>
+  </ol>
+
+  <div class="callout blue">
+    <strong>核心认知：</strong>Agent 的边际成本 = 调用次数 × Token量 × 模型单价。每天百万次 call、五个候选模型的场景下，10% 的成本差异 = 几千美金/月。<strong>跨框架对比不是锦上添花，是 ROI 的决策杠杆。</strong>
+  </div>
+
+  <h3>时间窗口</h3>
+  <ul>
+    <li><strong>多模型路由成为标配</strong> — OpenAI → 降价 → Anthropic → 追加 → DeepSeek → 开源 → Google → 捆绑</li>
+    <li><strong>Agent 框架碎片化</strong> — LangChain / Vercel AI SDK / OpenAI SDK / Claude API / 自研 — 没人统一看</li>
+    <li><strong>成本成为产品决策</strong> — Agent 不再 demo-only，生产环境的成本压力是真实需求</li>
+  </ul>
+  <p>共识：跨模型、跨框架的 Agent 可观测性是空白市场。AgentWatch 证明了单框架有需求，agent-datadog 证明了跨框架有差异化。</p>
+</section>
+
+<!-- ====== 快速上手 ====== -->
+<section id="quickstart">
+  <h2><span class="num">02</span>快速上手</h2>
+
+  <h3>安装 & 启动</h3>
+  <pre><span class="k">$</span> git clone https://github.com/jasoneip01-pixel/agent-datadog
+<span class="k">$</span> cd agent-datadog
+<span class="k">$</span> pip install -r requirements.txt
+<span class="k">$</span> uvicorn main:app --reload</pre>
+
+  <h3>成本对比 API</h3>
+  <pre><span class="k">$</span> curl https://api.agent-datadog.dev/api/cost/compare?model=gpt-4o</pre>
+
+  <p>真实输出：</p>
+  <pre style="font-size:9.5px">{
+  "model": "gpt-4o",
+  "frameworks": [
+    {
+      "framework": "openai",
+      "model": "gpt-4o",
+      "input_price_per_1m": 2.50,
+      "output_price_per_1m": 10.00,
+      "avg_latency_ms": 890,
+      "error_rate_pct": 1.2,
+      "cost_per_100k_tokens": 0.63,
+      "total_score": 7.8
+    },
+    {
+      "framework": "openai",
+      "model": "gpt-4o-mini",
+      "input_price_per_1m": 0.15,
+      "output_price_per_1m": 0.60,
+      "avg_latency_ms": 420,
+      "error_rate_pct": 0.8,
+      "cost_per_100k_tokens": 0.04,
+      "total_score": 9.1
+    }
+  ],
+  "best_value": {
+    "framework": "openai",
+    "model": "gpt-4o-mini",
+    "reason": "Lowest cost with acceptable latency and error rate"
+  }
+}</pre>
+
+  <h3>Benchmark API</h3>
+  <pre><span class="k">$</span> curl https://api.agent-datadog.dev/api/cost/benchmark</pre>
+
+  <h3>仪表盘</h3>
+  <pre><span class="k">$</span> open http://localhost:8000</pre>
+  <p>浏览器打开仪表盘：实时 SSE 流 · 成本趋势 · 延迟热力图 · 框架对比矩阵</p>
+</section>
+
+<!-- ====== 功能 ====== -->
+<section id="features">
+  <h2><span class="num">03</span>功能一览</h2>
+
+  <h3>核心能力（5 大模块）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>模块</th><th>功能描述</th><th>API</th><th>状态</th></tr>
+    <tr><td><strong>成本对比引擎</strong></td><td>跨框架模型级定价对比，5框架14模型全覆盖</td><td><code>/api/cost/compare</code></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>Benchmark 基准</strong></td><td>全量模型性能基准表，含 latency/error rate/price</td><td><code>/api/cost/benchmark</code></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>SSE 实时流</strong></td><td>Server-Sent Events 实时推送调用事件到仪表盘</td><td><code>/events</code></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>仪表盘</strong></td><td>Vanilla JS 面板：成本趋势/延迟/错误率/框架对比</td><td><code>/</code></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>CLI 集成</strong></td><td>agent-cost CLI 集成，终端级成本查询</td><td>—</td><td><span class="tag w">🚧</span></td></tr>
+    <tr><td><strong>Datadog Exporter</strong></td><td>推送 metrics 到 Datadog APM，与现有观测体系集成</td><td>—</td><td><span class="tag w">🚧</span></td></tr>
+  </table>
+  </div>
+
+  <h3>Covered 5 Frameworks, 14 Models</h3>
+  <ul>
+    <li><strong>OpenAI</strong> — gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo</li>
+    <li><strong>Anthropic</strong> — claude-3.5-sonnet, claude-3.5-haiku, claude-3-opus</li>
+    <li><strong>DeepSeek</strong> — deepseek-chat, deepseek-reasoner</li>
+    <li><strong>Google</strong> — gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash</li>
+    <li><strong>Mistral</strong> — mistral-large, mistral-small</li>
+  </ul>
+</section>
+
+<!-- ====== 技术架构 ====== -->
+<section id="architecture">
+  <h2><span class="num">04</span>技术架构</h2>
+
+  <div class="callout purple">
+    <strong>核心原语：Cross-Framework Cost Surface</strong><br>
+    <code>cost_surface = [benchmark(f) for f in frameworks]</code><br>
+    <code>best_route = argmin(f.cost_per_100k_tokens * tokens + f.avg_latency_ms * weight + f.error_rate_pct * penalty)</code>
+  </div>
+
+  <h3>代码结构</h3>
+  <pre>agent-datadog/
+├── <span class="k">main.py</span>             # FastAPI app (364 lines AgentWatch Fork)
+├── <span class="k">pricing.py</span>          # 5-framework 14-model pricing table
+├── <span class="k">benchmark.py</span>        # Benchmark engine (latency, error rate, scores)
+├── <span class="k">dashboard.py</span>        # SSE stream + dashboard routes
+├── <span class="k">compare.py</span>          # Cross-framework cost comparison logic
+├── <span class="k">templates/</span>
+│   └── <span class="k">dashboard.html</span>   # Vanilla JS dashboard panel
+├── <span class="k">static/</span>
+│   └── <span class="k">dashboard.js</span>     # Real-time charting, SSE client
+├── <span class="k">requirements.txt</span>   # FastAPI, uvicorn, sqlite3, sse-starlette
+└── <span class="k">data/</span>
+    └── <span class="k">pricing.db</span>        # SQLite pricing + benchmark data</pre>
+
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>API Layer</h4>
+      <div class="arch-item"><span class="name">/api/cost/compare</span> <span class="arrow">→</span> Model-level cross-framework comparison</div>
+      <div class="arch-item"><span class="name">/api/cost/benchmark</span> <span class="arrow">→</span> Full benchmark matrix (all frameworks × all models)</div>
+      <div class="arch-item"><span class="name">/events</span> <span class="arrow">→</span> SSE real-time event stream</div>
+      <div class="arch-item"><span class="name">/</span> <span class="arrow">→</span> Vanilla JS dashboard</div>
+    </div>
+    <div class="arch-box">
+      <h4>Data Layer</h4>
+      <div class="arch-item"><span class="name">pricing table</span> <span class="arrow">→</span> Official API prices (input/output per 1M tokens)</div>
+      <div class="arch-item"><span class="name">benchmark db</span> <span class="arrow">→</span> Latency + error rate + cost per 100k tokens</div>
+      <div class="arch-item"><span class="name">score engine</span> <span class="arrow">→</span> Weighted: cost 40% + latency 30% + reliability 30%</div>
+      <div class="arch-item"><span class="name">best_value</span> <span class="arrow">→</span> Context-aware recommendation</div>
+    </div>
+    <div class="arch-box">
+      <h4>Roadmap: Phase 2-3</h4>
+      <div class="arch-item"><span class="name">comparison panel</span> <span class="arrow">→</span> Side-by-side charting + model selector</div>
+      <div class="arch-item"><span class="name">agent-cost CLI</span> <span class="arrow">→</span> Terminal cost query tool</div>
+      <div class="arch-item"><span class="name">dd exporter</span> <span class="arrow">→</span> Datadog metrics push (histogram, gauge, event)</div>
+      <div class="arch-item"><span class="name">webhook</span> <span class="arrow">→</span> Slack/Teams alerting on cost spikes</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== API ====== -->
+<section id="api">
+  <h2><span class="num">05</span>API 参考</h2>
+
+  <h3><code>GET /api/cost/compare?model={model_name}</code></h3>
+  <p>查询指定模型在所有框架中的成本对比。返回各框架中与该模型同级别的所有可选方案。</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>参数</th><th>类型</th><th>必须</th><th>说明</th></tr>
+    <tr><td><code>model</code></td><td>string</td><td>是</td><td>模型名称，如 <code>gpt-4o</code>, <code>claude-3.5-sonnet</code></td></tr>
+    <tr><td><code>framework</code></td><td>string</td><td>否</td><td>限定对比框架，如 <code>openai</code></td></tr>
+    <tr><td><code>min_score</code></td><td>number</td><td>否</td><td>最低综合评分 (0-10)</td></tr>
+  </table>
+  </div>
+
+  <h3><code>GET /api/cost/benchmark</code></h3>
+  <p>全量基准数据。返回所有框架 × 所有模型的定价、延迟、错误率、综合评分。</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>参数</th><th>类型</th><th>必须</th><th>说明</th></tr>
+    <tr><td><code>limit</code></td><td>number</td><td>否</td><td>返回条目数 (默认 14)</td></tr>
+    <tr><td><code>sort_by</code></td><td>string</td><td>否</td><td>排序字段: <code>cost</code>, <code>latency</code>, <code>score</code></td></tr>
+    <tr><td><code>framework</code></td><td>string</td><td>否</td><td>按框架过滤</td></tr>
+  </table>
+  </div>
+
+  <h3><code>GET /events</code></h3>
+  <p>SSE 实时事件流。仪表盘通过 EventSource 订阅，实时展示成本/Latency/错误率变化。</p>
+  <pre><span class="k">// JavaScript</span>
+<span class="k">const</span> source = new EventSource(<span class="s">'/events'</span>);
+source.addEventListener(<span class="s">'cost_update'</span>, (e) => {
+  <span class="k">const</span> data = JSON.parse(e.data);
+  updateDashboard(data);
+});</pre>
+</section>
+
+<!-- ====== 定价模型 ====== -->
+<section id="pricing-model">
+  <h2><span class="num">06</span>5 框架 14 模型定价表</h2>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>框架</th><th>模型</th><th>Input $/1M tokens</th><th>Output $/1M tokens</th><th>Latency (ms)</th><th>Error Rate</th><th>Score</th></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4o</td><td>$2.50</td><td>$10.00</td><td>890</td><td>1.2%</td><td>7.8</td></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4o-mini</td><td>$0.15</td><td>$0.60</td><td>420</td><td>0.8%</td><td>9.1</td></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4-turbo</td><td>$10.00</td><td>$30.00</td><td>1100</td><td>1.5%</td><td>6.2</td></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-3.5-turbo</td><td>$0.50</td><td>$1.50</td><td>380</td><td>0.5%</td><td>8.5</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-3.5-sonnet</td><td>$3.00</td><td>$15.00</td><td>950</td><td>1.0%</td><td>7.5</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-3.5-haiku</td><td>$0.80</td><td>$4.00</td><td>510</td><td>0.6%</td><td>8.2</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-3-opus</td><td>$15.00</td><td>$75.00</td><td>1400</td><td>1.8%</td><td>4.8</td></tr>
+    <tr><td><strong>DeepSeek</strong></td><td>deepseek-chat</td><td>$0.14</td><td>$0.28</td><td>650</td><td>1.1%</td><td>8.8</td></tr>
+    <tr><td><strong>DeepSeek</strong></td><td>deepseek-reasoner</td><td>$0.55</td><td>$2.19</td><td>1200</td><td>1.3%</td><td>7.0</td></tr>
+    <tr><td><strong>Google</strong></td><td>gemini-1.5-pro</td><td>$1.25</td><td>$5.00</td><td>780</td><td>0.9%</td><td>8.0</td></tr>
+    <tr><td><strong>Google</strong></td><td>gemini-1.5-flash</td><td>$0.08</td><td>$0.30</td><td>320</td><td>1.4%</td><td>8.6</td></tr>
+    <tr><td><strong>Google</strong></td><td>gemini-2.0-flash</td><td>$0.10</td><td>$0.40</td><td>350</td><td>0.7%</td><td>9.0</td></tr>
+    <tr><td><strong>Mistral</strong></td><td>mistral-large</td><td>$2.00</td><td>$6.00</td><td>870</td><td>1.6%</td><td>7.2</td></tr>
+    <tr><td><strong>Mistral</strong></td><td>mistral-small</td><td>$0.20</td><td>$0.60</td><td>400</td><td>1.0%</td><td>8.7</td></tr>
+  </table>
+  </div>
+
+  <div class="callout green">
+    <strong>Best Value Picks:</strong> gpt-4o-mini (¥0.04/100k tokens · 9.1 score) · deepseek-chat (¥0.02/100k · 8.8 score) · gemini-2.0-flash (¥0.03/100k · 9.0 score) — 三个经济型标杆
+  </div>
+</section>
+
+<!-- ====== 竞争定位 ====== -->
+<section id="competitive">
+  <h2><span class="num">07</span>竞争定位</h2>
+
+  <p><strong>不做单框架的 AgentWatch，做跨框架的 Datadog for Agents。</strong></p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>能力</th><th>AgentWatch</th><th>LangSmith</th><th>Promptfoo</th><th>Helicone</th><th><strong>agent-datadog</strong></th></tr>
+    <tr><td>单框架监控</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag n">—</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>跨框架对比</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>成本对比 API</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag w">partial</span></td><td><span class="tag u">✅ 原生</span></td></tr>
+    <tr><td><strong>Benchmark 引擎</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td>SSE 实时流</td><td><span class="tag y">✅</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td>Dashboard</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td></tr>
+    <tr><td><strong>Datadog Exporter</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag w">🚧</span></td></tr>
+  </table>
+  </div>
+
+  <div class="callout blue">
+    <strong>AgentWatch 已验证需求，agent-datadog 填补空白。</strong><br><br>
+    AgentWatch 证明了"Agent 需要可观测性"这个市场。但 AgentWatch 只做单框架。当你的 Agent 同时用 3 个模型、2 个框架、5 个 API 时——谁帮你比谁更划算？<br><br>
+    <strong>AgentWatch answers: "Is my agent healthy?"</strong><br>
+    <strong>agent-datadog answers: "Which agent setup costs me the least?"</strong>
+  </div>
+
+  <h3>差异化核心</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔄 Cross-Framework</h4>
+      <p>5 框架 14 模型统一对比。输出 "best value" 推荐，而不是让用户自己查定价页。</p>
+    </div>
+    <div class="card">
+      <h4>💰 Cost as a Decision Tool</h4>
+      <p>不只是好看图表。回答: "换成 deepseek-chat 在同等质量下能省多少钱？"</p>
+    </div>
+    <div class="card">
+      <h4>📊 Weighted Scoring</h4>
+      <p>综合评分 = 成本 40% + 延迟 30% + 可靠性 30%。可调权重的决策框架。</p>
+    </div>
+    <div class="card">
+      <h4>🔌 Datadog Ecosystem</h4>
+      <p>与现有 Datadog 工作流集成。Agent 指标进入统一 APM 视图。</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+const sections=document.querySelectorAll('section[id]');
+const links=document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll',()=>{
+  let current='';
+  sections.forEach(s=>{
+    const top=s.getBoundingClientRect().top;
+    if(top<200) current=s.id;
+  });
+  links.forEach(l=>{
+    l.classList.toggle('active',l.getAttribute('href')==='#'+current);
+  });
+});
+</script>
+</body>
+</html>

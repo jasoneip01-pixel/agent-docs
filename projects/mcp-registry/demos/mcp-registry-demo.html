@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<title>MCP Registry Demo — Agent 的 npm | v0.2.0</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#22d3ee; --blue:#60a5fa; --purple:#a78bfa; --pink:#f472b6;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 20%,rgba(34,211,238,.05) 0%,transparent 50%),radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.05) 0%,transparent 50%),var(--bg);
+  color:var(--text);display:flex;flex-direction:column;overflow:hidden;
+}
+header{
+  padding:10px 20px;border-bottom:1px solid var(--line);
+  background:var(--panel);display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+header .logo{font-size:14px;font-weight:700}
+header .logo span{color:var(--accent)}
+header .tagline{font-size:9px;color:var(--muted);display:flex;align-items:center;gap:5px}
+header .badge{padding:2px 7px;border-radius:4px;font-size:8px;font-weight:600}
+header .badge.ver{background:rgba(34,211,238,.1);color:var(--accent);border:1px solid rgba(34,211,238,.15)}
+header .badge.beta{background:rgba(239,68,68,.12);color:var(--fail);border:1px solid rgba(239,68,68,.2)}
+header .badge.tools{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.15)}
+
+/* CLI bar */
+.cli-bar{
+  padding:7px 20px;flex-shrink:0;
+  background:#0a0e14;border-bottom:1px solid var(--line);
+  font-family:'JetBrains Mono','Fira Code',monospace;font-size:10px;color:var(--muted);
+}
+.cli-bar .line{display:flex;align-items:center;gap:5px;margin:1px 0;flex-wrap:wrap}
+.cli-bar .prompt{color:var(--pass)}
+.cli-bar .cmd{color:var(--text)}
+.cli-bar .flag{color:var(--blue)}
+.cli-bar .val{color:var(--accent)}
+.cli-bar .cursor{animation:blink2 1s step-end infinite;display:inline-block;width:6px;height:11px;background:var(--accent);vertical-align:text-bottom}
+@keyframes blink2{50%{opacity:0}}
+.cli-out{background:rgba(34,211,238,.04);border-radius:4px;padding:3px 8px;margin-top:3px}
+.cli-out .verdict{font-weight:700;font-size:11px;color:var(--accent);margin-right:6px}
+.cli-out .stat{gap:10px;display:inline-flex;font-size:9px}
+.stat .s-item{display:inline-flex;align-items:center;gap:3px}
+.stat .s-dot{width:5px;height:5px;border-radius:50%}
+.stat .s-dot.crit{background:var(--fail)}
+.stat .s-dot.warn{background:var(--warn)}
+.stat .s-dot.pass{background:var(--pass)}
+.stat .s-dot.total{background:var(--accent)}
+
+main{flex:1;display:flex;overflow:hidden}
+
+/* Left */
+.explorer{width:280px;flex-shrink:0;border-right:1px solid var(--line);background:rgba(0,0,0,.2);display:flex;flex-direction:column;overflow:hidden}
+.exp-head{padding:10px 14px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--line);flex-shrink:0}
+.what-changed{background:rgba(0,0,0,.25);padding:10px 14px;flex-shrink:0;border-bottom:1px solid var(--line)}
+.wc-head{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px}
+.wc-list{display:flex;flex-direction:column;gap:3px}
+.wc-item{font-size:9.5px;display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace}
+.wc-icon{width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;flex-shrink:0}
+.wc-icon.crit{background:rgba(239,68,68,.12);color:var(--fail)}
+.wc-icon.warn{background:rgba(251,191,36,.12);color:var(--warn)}
+.wc-icon.tool{background:rgba(34,211,238,.12);color:var(--accent)}
+.wc-item .tag{padding:1px 4px;border-radius:3px;font-size:7.5px;font-weight:600}
+.tag.dev{background:rgba(96,165,250,.12);color:var(--blue)}
+.tag.prod{background:rgba(74,222,128,.12);color:var(--pass)}
+.tag.comm{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.data{background:rgba(34,211,238,.12);color:var(--accent)}
+.tag.auto{background:rgba(251,191,36,.12);color:var(--warn)}
+.tag.fin{background:rgba(244,114,182,.12);color:var(--pink)}
+.exp-body{flex:1;overflow-y:auto;padding:6px 0}
+.folder{font-size:11px}
+.folder-main{padding:5px 14px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text);font-weight:500;transition:all .1s}
+.folder-main:hover{background:var(--glass)}
+.folder-main .arrow{color:var(--muted);font-size:9px;transition:transform .15s;margin-right:1px}
+.folder-main.open .arrow{transform:rotate(90deg)}
+.folder-children{display:none;padding-left:16px}
+.folder.open>.folder-children{display:block}
+.file-item{padding:4px 14px 4px 22px;font-size:10px;display:flex;align-items:center;gap:5px;cursor:pointer;border-left:2px solid transparent}
+.file-item:hover{background:var(--glass)}
+.file-item.selected{background:rgba(34,211,238,.08);border-left-color:var(--accent);color:var(--accent)}
+.file-item .count-badge{padding:1px 5px;border-radius:3px;font-size:7.5px;font-weight:600;margin-left:auto}
+.count-badge.dev{background:rgba(96,165,250,.12);color:var(--blue)}
+.count-badge.prod{background:rgba(74,222,128,.12);color:var(--pass)}
+.count-badge.comm{background:rgba(167,139,250,.12);color:var(--purple)}
+.count-badge.data{background:rgba(34,211,238,.12);color:var(--accent)}
+.count-badge.auto{background:rgba(251,191,36,.12);color:var(--warn)}
+.count-badge.fin{background:rgba(244,114,182,.12);color:var(--pink)}
+.count-badge.crea{background:rgba(96,165,250,.12);color:var(--blue)}
+
+/* Right */
+.results{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.res-tabs{display:flex;gap:0;flex-shrink:0;border-bottom:1px solid var(--line);padding:0 14px}
+.res-tab{padding:8px 14px;font-size:10.5px;font-weight:500;color:var(--muted);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .12s}
+.res-tab:hover{color:var(--text)}
+.res-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.res-tab .tc{padding:1px 4px;border-radius:3px;font-size:8px;font-weight:600;margin-left:3px}
+.res-tab .tc.b{background:rgba(239,68,68,.12);color:var(--fail)}
+.res-tab .tc.w{background:rgba(251,191,36,.12);color:var(--warn)}
+.res-tab .tc.g{background:rgba(74,222,128,.1);color:var(--pass)}
+.res-panel{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:10px 14px}
+.res-panel.active{display:flex}
+
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px 0}
+.tool-card{
+  background:var(--panel);border-radius:8px;border:1px solid var(--line);padding:10px 12px;
+  animation:fadeSlide .35s ease-out both;cursor:pointer;transition:all .15s;
+}
+.tool-card:hover{border-color:rgba(148,200,255,.2);background:var(--panel2)}
+.tool-card:nth-child(1){animation-delay:0s}.tool-card:nth-child(2){animation-delay:.06s}.tool-card:nth-child(3){animation-delay:.12s}.tool-card:nth-child(4){animation-delay:.18s}.tool-card:nth-child(5){animation-delay:.24s}.tool-card:nth-child(6){animation-delay:.3s}
+.tool-card:nth-child(7){animation-delay:.36s}.tool-card:nth-child(8){animation-delay:.42s}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.tool-card .t-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.tool-card .t-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;background:var(--panel2);border:1px solid var(--line)}
+.tool-card .t-name{font-size:11px;font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.tool-card .t-stars{font-size:8px;color:var(--muted);margin-left:auto}
+.tool-card .t-desc{font-size:9.5px;color:var(--muted);line-height:1.5;margin-bottom:4px}
+.tool-card .t-tags{display:flex;gap:3px;flex-wrap:wrap}
+.tool-card .t-tag{padding:1px 5px;border-radius:3px;font-size:7.5px;font-weight:600}
+
+.tool-detail{
+  background:var(--panel);border-radius:8px;border:1px solid var(--line);padding:12px 14px;margin-bottom:7px;
+  animation:fadeSlide .35s ease-out both;
+}
+.td-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.td-name{font-size:14px;font-weight:700;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.td-ver{font-size:10px;color:var(--muted)}
+.td-stars{font-size:10px;color:var(--warn)}
+.td-section{font-size:11px;margin-bottom:6px}
+.td-section .label{color:var(--muted);font-weight:600;margin-right:6px;text-transform:uppercase;font-size:9px;letter-spacing:.3px}
+.td-section .value{color:var(--text)}
+.td-tools{margin:6px 0}
+.td-tool-item{font-size:10px;padding:2px 6px;display:inline-flex;align-items:center;gap:4px;background:var(--panel2);border-radius:4px;margin:2px}
+.td-tool-item .e{color:var(--accent)}
+.td-deps{font-size:9px;color:var(--muted)}
+.td-install{padding:6px 10px;background:var(--panel2);border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--pass);margin-top:6px;display:flex;align-items:center;gap:6px}
+.td-install .cp-btn{font-size:8px;color:var(--muted);cursor:pointer;border:none;background:none;margin-left:auto}
+
+.terminal-wrap{padding:8px;background:rgba(0,0,0,.3);border-radius:8px;border:1px solid var(--line);margin-bottom:8px;font-family:'JetBrains Mono',monospace}
+.term-line{padding:1px 0;font-size:10px;line-height:1.6;display:flex;gap:6px}
+.term-line .prompt{color:var(--pass);white-space:pre}
+.term-line .cmd{color:var(--text)}
+.term-line .out{color:var(--muted)}
+.term-line .hl{color:var(--accent)}
+.term-line .err{color:var(--fail)}
+.term-line .s{color:var(--pass)}
+.term-line .m{color:var(--purple)}
+.tooltip{font-size:9px;color:var(--muted);padding:4px 0;text-align:center;display:flex;gap:8px;justify-content:center}
+.tooltip .btn{padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:9px;font-weight:600;background:var(--panel2);color:var(--text);transition:all .1s}
+.tooltip .btn:hover{background:rgba(34,211,238,.12);color:var(--accent)}
+.tooltip .btn.act{background:rgba(34,211,238,.12);color:var(--accent)}
+
+.search-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.search-bar .sb{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text);outline:none;min-width:120px}
+.search-bar .sb:focus{border-color:rgba(34,211,238,.3)}
+.search-bar .sb-btn{padding:7px 14px;border-radius:6px;border:none;font-size:9px;font-weight:600;background:var(--accent);color:#090d14;cursor:pointer}
+.search-bar .sb-btn:hover{box-shadow:0 0 12px rgba(34,211,238,.2)}
+
+.footer{
+  border-top:1px solid var(--line);padding:8px 20px;flex-shrink:0;
+  display:flex;align-items:center;gap:12px;background:var(--panel);
+}
+.vb{padding:3px 10px;border-radius:5px;font-size:12px;font-weight:700}
+.vb.mvp{background:rgba(34,211,238,.12);color:var(--accent)}
+.vr{font-size:9px;color:var(--muted);line-height:1.4}
+.vr .vl{color:var(--text);font-weight:600}
+.fa{margin-left:auto;display:flex;gap:6px}
+.btn{padding:6px 14px;border-radius:7px;border:none;cursor:pointer;font-size:10px;font-weight:600;transition:all .15s}
+.btn.pri{background:var(--accent);color:#090d14}
+.btn.pri:hover{box-shadow:0 0 16px rgba(34,211,238,.25)}
+.btn.sec{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.btn.sec:hover{background:rgba(255,255,255,.04)}
+
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.05);border-radius:2px}
+
+@media(max-width:834px){
+  .explorer{width:240px}
+  .res-tab{padding:7px 10px;font-size:10px}
+  .tool-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  html,body{overflow:auto;height:auto;min-height:100vh}
+  main{flex-direction:column;overflow:visible}
+  .explorer{width:100%;border-right:none;border-bottom:1px solid var(--line);max-height:260px}
+  .cli-bar{padding:5px 12px;font-size:9px}
+  .res-tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .res-tab{padding:7px 10px;font-size:9.5px;min-height:44px;display:flex;align-items:center}
+  .res-panel{padding:8px 12px;overflow:visible}
+  .tool-grid{grid-template-columns:1fr}
+  .footer{padding:8px 12px;flex-wrap:wrap;gap:6px}
+  .fa{flex-wrap:wrap;gap:5px}
+  .btn{padding:6px 12px;font-size:10px;min-height:44px}
+  .folder-main,.file-item{min-height:40px;display:flex;align-items:center}
+}
+@media(max-width:430px){
+  body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+  header{padding:8px 12px;gap:6px}
+  header .logo{font-size:12px}
+  header .tagline{display:none}
+  header .badge{font-size:7.5px;padding:2px 5px}
+  .cli-bar{padding:5px 10px;font-size:8.5px}
+  .cli-bar .line{gap:3px}
+  .cli-out .verdict{font-size:10px}
+  .cli-out .stat{gap:5px;font-size:8px}
+  .explorer{max-height:220px}
+  .exp-head{font-size:9px;padding:8px 12px}
+  .what-changed{padding:6px 10px}
+  .wc-item{font-size:8.5px}
+  .folder-main{padding:5px 12px;font-size:10px}
+  .file-item{padding:4px 10px 4px 18px;font-size:9px}
+  .res-tabs{overflow-x:auto;white-space:nowrap;padding:0 8px}
+  .res-tab{padding:6px 8px;font-size:8.5px}
+  .res-panel{padding:6px 10px}
+  .tool-card{padding:8px 10px}
+  .tool-card .t-name{font-size:10px}
+  .tool-card .t-desc{font-size:8.5px}
+  .terminal-wrap{padding:5px}
+  .term-line{font-size:8.5px}
+  .search-bar .sb{font-size:9px;padding:6px 8px}
+  .search-bar .sb-btn{padding:6px 10px;font-size:8.5px}
+  .footer{padding:6px 10px;gap:6px}
+  .vb{font-size:10px;padding:2px 8px}
+  .vr{font-size:8px}
+  .fa{gap:4px;flex-wrap:wrap}
+  .btn{padding:5px 10px;font-size:9px;min-height:40px}
+}
+@media(max-width:375px){
+  .tool-card{padding:6px 8px}
+  .tool-card .t-desc{font-size:8px}
+  .term-line{font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MCP <span>Registry</span></div>
+  <div class="tagline">
+    <span class="badge ver">v0.2.0</span>
+    <span class="badge beta">MVP</span>
+    <span class="badge tools">30 tools</span>
+    <span>· CLI Demo · Simulated Output</span>
+  </div>
+</header>
+
+<div class="cli-bar">
+  <div class="line"><span class="prompt">$</span> <span class="cmd">mcp-registry search postgres --format json</span></div>
+  <div class="line cli-out" id="cliBar">
+    <span class="verdict">3 results</span>
+    <span class="stat">
+      <span class="s-item"><span class="s-dot total"></span> 17ms</span>
+      <span class="s-item"><span class="s-dot crit"></span> 30 tools total</span>
+    </span>
+    <span style="margin-left:auto;color:var(--accent);font-size:8px;cursor:pointer" onclick="runSearch(document.getElementById('searchInput').value||'postgres')">⟳ rerun</span>
+  </div>
+</div>
+
+<main>
+  <!-- Left Panel: Explorer -->
+  <div class="explorer">
+    <div class="exp-head">📦 registry/index.json</div>
+    <div class="what-changed">
+      <div class="wc-head">今日新增 (3)</div>
+      <div class="wc-list">
+        <div class="wc-item"><span class="wc-icon tool">+</span> terraform-mcp <span class="tag auto">automation</span></div>
+        <div class="wc-item"><span class="wc-icon tool">+</span> elastic-mcp <span class="tag data">data</span></div>
+        <div class="wc-item"><span class="wc-icon tool">+</span> wechat-mcp <span class="tag comm">communication</span></div>
+      </div>
+    </div>
+    <div class="exp-body" id="explorerBody">
+      <div class="folder open">
+        <div class="folder-main open"><span class="arrow">▶</span> 🏷️ 按类别</div>
+        <div class="folder-children">
+          <div class="file-item" data-category="developer" onclick="switchFilter('developer')">
+            <span>⚡ Developer</span>
+            <span class="count-badge dev">6</span>
+          </div>
+          <div class="file-item" data-category="productivity" onclick="switchFilter('productivity')">
+            <span>📋 Productivity</span>
+            <span class="count-badge prod">5</span>
+          </div>
+          <div class="file-item" data-category="communication" onclick="switchFilter('communication')">
+            <span>💬 Communication</span>
+            <span class="count-badge comm">5</span>
+          </div>
+          <div class="file-item" data-category="data" onclick="switchFilter('data')">
+            <span>📊 Data</span>
+            <span class="count-badge data">5</span>
+          </div>
+          <div class="file-item" data-category="automation" onclick="switchFilter('automation')">
+            <span>🤖 Automation</span>
+            <span class="count-badge auto">4</span>
+          </div>
+          <div class="file-item" data-category="finance" onclick="switchFilter('finance')">
+            <span>💰 Finance</span>
+            <span class="count-badge fin">3</span>
+          </div>
+          <div class="file-item" data-category="creative" onclick="switchFilter('creative')">
+            <span>🎨 Creative</span>
+            <span class="count-badge crea">2</span>
+          </div>
+        </div>
+      </div>
+      <div class="folder">
+        <div class="folder-main"><span class="arrow">▶</span> ⭐ 按类型</div>
+        <div class="folder-children">
+          <div class="file-item" onclick="switchFilter('all')"><span>📦 All Tools</span><span class="count-badge dev">30</span></div>
+          <div class="file-item" onclick="switchFilter('popular')"><span>🔥 Most Popular</span><span class="count-badge prod">5</span></div>
+          <div class="file-item" onclick="switchFilter('new')"><span>🆕 Recently Added</span><span class="count-badge data">3</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel: Results -->
+  <div class="results">
+    <div class="res-tabs">
+      <button class="res-tab active" data-tab="browse" onclick="switchTab('browse')">🔍 Browse Tools <span class="tc g">30</span></button>
+      <button class="res-tab" data-tab="detail" onclick="switchTab('detail')">📋 Tool Detail</button>
+      <button class="res-tab" data-tab="cli" onclick="switchTab('cli')">💻 CLI Demo</button>
+    </div>
+
+    <!-- Browse Panel -->
+    <div class="res-panel active" id="panel-browse">
+      <div class="search-bar">
+        <input class="sb" id="searchInput" placeholder="Search tools... (e.g. git, postgres, stripe)" spellcheck="false"
+          onkeydown="if(event.key==='Enter')runSearch(this.value)">
+        <button class="sb-btn" onclick="runSearch(document.getElementById('searchInput').value)">Search</button>
+        <button class="sb-btn" style="background:var(--panel2);color:var(--text);border:1px solid var(--line)" onclick="runSearch('')">All</button>
+      </div>
+      <div id="browseGrid" class="tool-grid"></div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="res-panel" id="panel-detail">
+      <div id="detailContent"></div>
+    </div>
+
+    <!-- CLI Demo Panel -->
+    <div class="res-panel" id="panel-cli">
+      <div class="terminal-wrap" id="cliTerminal">
+        <div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry list --category data</span></div>
+        <div class="term-line"><span class="out"> Name              ✦ Tools    ⚡ Stars    License</span></div>
+        <div class="term-line"><span class="out"> ──────────────────────────────────────────────</span></div>
+        <div class="term-line"><span class="out"> postgres-mcp       9          <span class="hl">4,321</span>      MIT</span></div>
+        <div class="term-line"><span class="out"> mysql-mcp          8          <span class="hl">2,567</span>      MIT</span></div>
+        <div class="term-line"><span class="out"> redis-mcp          6          <span class="hl">1,987</span>      MIT</span></div>
+        <div class="term-line"><span class="out"> mongodb-mcp        7          <span class="hl">2,123</span>      MIT</span></div>
+        <div class="term-line"><span class="out"> elastic-mcp        6          <span class="hl">1,456</span>      Apache-2.0</span></div>
+        <div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry info postgres-mcp</span></div>
+        <div class="term-line"><span class="hl">postgres-mcp</span> <span class="s">v2.1.0</span></div>
+        <div class="term-line"><span class="out">  Description: PostgreSQL — query, schema, migration</span></div>
+        <div class="term-line"><span class="out">  Category:    <span class="hl">data</span></span></div>
+        <div class="term-line"><span class="out">  License:     MIT</span></div>
+        <div class="term-line"><span class="out">  Stars:       <span class="hl">4,321</span></span></div>
+        <div class="term-line"><span class="out">  Install:     <span class="s">pip install postgres-mcp-server</span></span></div>
+        <div class="term-line"><span class="out">  Tools (9): <span class="m">✦</span> pg.query <span class="m">✦</span> pg.schema <span class="m">✦</span> pg.migrate <span class="m">✦</span> pg.execute ...</span></div>
+        <div class="term-line"><span class="prompt">$</span> <span class="cmd"><span id="cliCursor" class="cursor"></span></span></div>
+      </div>
+      <div class="tooltip">
+        <span>Try:</span>
+        <button class="btn act" onclick="runCliDemo('search data')">mcp-registry search data</button>
+        <button class="btn" onclick="runCliDemo('install postgres-mcp')">mcp-registry install postgres-mcp</button>
+        <button class="btn" onclick="runCliDemo('publish')">mcp-registry publish ./my-tool</button>
+        <button class="btn" onclick="runCliDemo('list developer')">mcp-registry list --category developer</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="vb mvp">⚡ 30 Tools</div>
+  <div class="vr">Selected tool: <span class="vl" id="selectedTool">—</span> · <span class="vl" id="resultCount">30</span> tools</div>
+  <div class="fa">
+    <button class="btn sec" onclick="switchFilter('all')">📦 All Tools</button>
+    <button class="btn sec" onclick="switchTab('browse')">🔍 Browse</button>
+    <button class="btn sec" onclick="switchFilter('popular')">🔥 Popular</button>
+  </div>
+</footer>
+
+<script>
+// ——— 30 tools data ———
+const TOOLS = {
+  git: { ic:'⚡', cat:'developer', stars:3421, ver:'v1.4.0', desc:'Git operations — commit, branch, PR, blame', tools:['git.commit','git.branch','git.merge','git.status','git.log','git.diff','git.stash','git.rebase','git.blame','git.tag','git.fetch','git.push'], deps:['gitpython','rich','click'], license:'MIT', install:'pip install git-mcp-server', url:'github.com/user/git-mcp' },
+  docker: { ic:'⚡', cat:'developer', stars:2156, ver:'v2.0.1', desc:'Docker container management — images, containers, volumes, networks', tools:['docker.ps','docker.run','docker.stop','docker.build','docker.push','docker.images','docker.network','docker.volume'], deps:['docker','httpx'], license:'MIT', install:'pip install docker-mcp', url:'github.com/user/docker-mcp' },
+  kubernetes: { ic:'⚡', cat:'developer', stars:1892, ver:'v1.8.0', desc:'K8s cluster — pods, deployments, services, logs', tools:['k8s.get_pods','k8s.get_deployments','k8s.logs','k8s.exec','k8s.apply','k8s.delete','k8s.scale','k8s.describe','k8s.events','k8s.namespace','k8s.config','k8s.secret','k8s.service','k8s.ingress','k8s.rollout'], deps:['kubernetes','pyyaml'], license:'Apache-2.0', install:'pip install kubernetes-mcp', url:'github.com/user/k8s-mcp' },
+  eslint: { ic:'⚡', cat:'developer', stars:876, ver:'v0.5.2', desc:'ESLint integration — lint, fix, config management', tools:['eslint.lint','eslint.fix','eslint.check_config','eslint.list_rules','eslint.format'], deps:['eslint'], license:'MIT', install:'pip install eslint-mcp', url:'github.com/user/eslint-mcp' },
+  prettier: { ic:'⚡', cat:'developer', stars:543, ver:'v0.3.0', desc:'Code formatting via Prettier', tools:['prettier.format','prettier.check','prettier.config'], deps:['prettier'], license:'MIT', install:'pip install prettier-mcp', url:'github.com/user/prettier-mcp' },
+  typescript: { ic:'⚡', cat:'developer', stars:734, ver:'v0.6.1', desc:'TypeScript compilation and type checking', tools:['ts.compile','ts.check','ts.emit','ts.watch'], deps:['typescript'], license:'MIT', install:'pip install typescript-mcp', url:'github.com/user/ts-mcp' },
+  notion: { ic:'📋', cat:'productivity', stars:2843, ver:'v1.2.0', desc:'Notion — pages, databases, search, comments', tools:['notion.page','notion.database','notion.search','notion.comment','notion.user','notion.block','notion.property'], deps:['notion-sdk-py'], license:'MIT', install:'pip install notion-mcp-server', url:'github.com/user/notion-mcp' },
+  todoist: { ic:'📋', cat:'productivity', stars:1234, ver:'v0.4.0', desc:'Todoist — tasks, projects, labels, filters', tools:['todoist.task','todoist.project','todoist.label','todoist.complete','todoist.due','todoist.collaborator'], deps:['todoist-python'], license:'MIT', install:'pip install todoist-mcp', url:'github.com/user/todoist-mcp' },
+  calendar: { ic:'📋', cat:'productivity', stars:1567, ver:'v0.8.1', desc:'Calendar — events, reminders, scheduling, availability', tools:['cal.list','cal.create','cal.update','cal.delete','cal.availability'], deps:['google-api-python-client'], license:'MIT', install:'pip install calendar-mcp', url:'github.com/user/calendar-mcp' },
+  gmail: { ic:'💬', cat:'communication', stars:1247, ver:'v0.3.1', desc:'Gmail — send, read, search, labels, drafts', tools:['gmail.send','gmail.read','gmail.search','gmail.drafts','gmail.labels'], deps:['httpx','google-auth'], license:'MIT', install:'pip install gmail-mcp-server', url:'github.com/user/gmail-mcp' },
+  slack_status: { ic:'📋', cat:'productivity', stars:432, ver:'v0.2.0', desc:'Slack status — set, get, emoji, DND', tools:['slack.status_set','slack.status_get','slack.emoji','slack.dnd'], deps:['slack-sdk'], license:'MIT', install:'pip install slack-status-mcp', url:'github.com/user/slack-status-mcp' },
+  slack: { ic:'💬', cat:'communication', stars:3214, ver:'v1.5.0', desc:'Full Slack — messages, channels, files, reactions', tools:['slack.message','slack.channel','slack.file','slack.reaction','slack.thread','slack.user','slack.search','slack.reminder','slack.pin','slack.star'], deps:['slack-sdk'], license:'MIT', install:'pip install slack-mcp-server', url:'github.com/user/slack-mcp' },
+  discord: { ic:'💬', cat:'communication', stars:1876, ver:'v0.7.0', desc:'Discord — messages, channels, roles, members', tools:['discord.message','discord.channel','discord.role','discord.member','discord.emoji','discord.thread','discord.webhook','discord.audit'], deps:['discord.py'], license:'MIT', install:'pip install discord-mcp', url:'github.com/user/discord-mcp' },
+  telegram: { ic:'💬', cat:'communication', stars:1543, ver:'v0.5.1', desc:'Telegram — send, receive, polls, bot management', tools:['tg.send','tg.receive','tg.poll','tg.chat','tg.media','tg.inline'], deps:['python-telegram-bot'], license:'MIT', install:'pip install telegram-mcp', url:'github.com/user/telegram-mcp' },
+  whatsapp: { ic:'💬', cat:'communication', stars:2109, ver:'v0.4.2', desc:'WhatsApp — send, receive, groups, media', tools:['wa.send','wa.receive','wa.group','wa.media','wa.status'], deps:['twilio'], license:'MIT', install:'pip install whatsapp-mcp', url:'github.com/user/whatsapp-mcp' },
+  wechat: { ic:'💬', cat:'communication', stars:654, ver:'v0.1.1', desc:'WeChat — messages via WeWork bot', tools:['wx.send','wx.receive','wx.group','wx.file'], deps:['httpx'], license:'MIT', install:'pip install wechat-mcp', url:'github.com/user/wechat-mcp' },
+  postgres: { ic:'📊', cat:'data', stars:4321, ver:'v2.1.0', desc:'PostgreSQL — query, schema, migration, monitoring', tools:['pg.query','pg.schema','pg.migrate','pg.execute','pg.tables','pg.index','pg.backup','pg.restore','pg.monitor'], deps:['psycopg2-binary','sqlparse'], license:'MIT', install:'pip install postgres-mcp-server', url:'github.com/user/postgres-mcp' },
+  mysql: { ic:'📊', cat:'data', stars:2567, ver:'v1.9.0', desc:'MySQL — query, schema, admin, performance', tools:['mysql.query','mysql.schema','mysql.admin','mysql.export','mysql.import','mysql.users','mysql.process','mysql.config'], deps:['mysql-connector-python'], license:'MIT', install:'pip install mysql-mcp', url:'github.com/user/mysql-mcp' },
+  redis: { ic:'📊', cat:'data', stars:1987, ver:'v1.3.0', desc:'Redis — keys, strings, lists, streams, pubsub', tools:['redis.keys','redis.strings','redis.lists','redis.sets','redis.streams','redis.pubsub'], deps:['redis-py'], license:'MIT', install:'pip install redis-mcp', url:'github.com/user/redis-mcp' },
+  mongodb: { ic:'📊', cat:'data', stars:2123, ver:'v1.6.0', desc:'MongoDB — documents, aggregation, indexes', tools:['mongo.find','mongo.insert','mongo.update','mongo.delete','mongo.aggregate','mongo.index','mongo.collection'], deps:['pymongo'], license:'MIT', install:'pip install mongodb-mcp', url:'github.com/user/mongodb-mcp' },
+  elastic: { ic:'📊', cat:'data', stars:1456, ver:'v0.4.0', desc:'Elasticsearch — search, index, mapping, analysis', tools:['es.search','es.index','es.mapping','es.analyze','es.delete','es.cluster'], deps:['elasticsearch-py'], license:'Apache-2.0', install:'pip install elastic-mcp', url:'github.com/user/elastic-mcp' },
+  github: { ic:'🤖', cat:'automation', stars:3876, ver:'v1.7.0', desc:'GitHub Actions — workflow, dispatch, runs, check', tools:['gh.workflow','gh.dispatch','gh.runs','gh.check','gh.secret','gh.artifact','gh.release','gh.issue'], deps:['PyGithub','httpx'], license:'MIT', install:'pip install github-mcp', url:'github.com/user/github-mcp' },
+  jenkins: { ic:'🤖', cat:'automation', stars:1234, ver:'v0.6.0', desc:'Jenkins — jobs, builds, pipelines, nodes', tools:['jenkins.job','jenkins.build','jenkins.pipeline','jenkins.node','jenkins.log','jenkins.artifact'], deps:['python-jenkins'], license:'MIT', install:'pip install jenkins-mcp', url:'github.com/user/jenkins-mcp' },
+  terraform: { ic:'🤖', cat:'automation', stars:1876, ver:'v0.5.1', desc:'Terraform — plan, apply, state, output, validate', tools:['tf.plan','tf.apply','tf.state','tf.output','tf.validate','tf.destroy','tf.import'], deps:['hcl2','pyyaml'], license:'MIT', install:'pip install terraform-mcp', url:'github.com/user/terraform-mcp' },
+  ansible: { ic:'🤖', cat:'automation', stars:987, ver:'v0.3.0', desc:'Ansible — playbook, inventory, modules, vault', tools:['ansible.playbook','ansible.inventory','ansible.module','ansible.vault','ansible.galaxy'], deps:['ansible-runner'], license:'MIT', install:'pip install ansible-mcp', url:'github.com/user/ansible-mcp' },
+  stripe: { ic:'💰', cat:'finance', stars:2456, ver:'v1.3.0', desc:'Stripe — payments, customers, invoices, refunds', tools:['stripe.payment','stripe.customer','stripe.invoice','stripe.refund','stripe.product','stripe.subscription','stripe.balance','stripe.webhook'], deps:['stripe'], license:'MIT', install:'pip install stripe-mcp', url:'github.com/user/stripe-mcp' },
+  plaid: { ic:'💰', cat:'finance', stars:1234, ver:'v0.4.5', desc:'Plaid — accounts, transactions, auth, identity', tools:['plaid.accounts','plaid.transactions','plaid.auth','plaid.identity','plaid.balance','plaid.categories'], deps:['plaid-python'], license:'MIT', install:'pip install plaid-mcp', url:'github.com/user/plaid-mcp' },
+  coinbase: { ic:'💰', cat:'finance', stars:876, ver:'v0.3.2', desc:'Coinbase — prices, wallets, trades, orders', tools:['coinbase.price','coinbase.wallet','coinbase.trade','coinbase.order','coinbase.history'], deps:['coinbase-advanced-py'], license:'MIT', install:'pip install coinbase-mcp', url:'github.com/user/coinbase-mcp' },
+  figma: { ic:'🎨', cat:'creative', stars:2876, ver:'v0.8.1', desc:'Figma — files, components, comments, styles', tools:['figma.file','figma.component','figma.comment','figma.style','figma.image','figma.node','figma.team'], deps:['httpx'], license:'MIT', install:'pip install figma-mcp', url:'github.com/user/figma-mcp' },
+  stable_diff: { ic:'🎨', cat:'creative', stars:4321, ver:'v1.0.3', desc:'Stable Diffusion — text-to-image, img2img, upscale', tools:['sd.generate','sd.img2img','sd.upscale','sd.model'], deps:['diffusers','torch','transformers'], license:'MIT', install:'pip install stable-diff-mcp', url:'github.com/user/stable-diff-mcp' }
+};
+
+const CATEGORIES = { developer:'⚡ Developer', productivity:'📋 Productivity', communication:'💬 Communication', data:'📊 Data', automation:'🤖 Automation', finance:'💰 Finance', creative:'🎨 Creative' };
+const CAT_COLORS = { developer:'dev', productivity:'prod', communication:'comm', data:'data', automation:'auto', finance:'fin', creative:'crea' };
+
+let activeCategory = 'all';
+
+function getTools(category) {
+  let arr = Object.entries(TOOLS);
+  if (category === 'popular') arr = arr.sort((a,b)=>b[1].stars-a[1].stars).slice(0,5);
+  else if (category === 'new') arr = arr.slice(-3);
+  else if (category && category !== 'all') arr = arr.filter(([,v])=>v.cat===category);
+  return arr;
+}
+
+function renderGrid(category) {
+  activeCategory = category || 'all';
+  const arr = getTools(activeCategory);
+  const grid = document.getElementById('browseGrid');
+  document.getElementById('resultCount').textContent = arr.length;
+  grid.innerHTML = arr.map(([key,t])=>{
+    const col = CAT_COLORS[t.cat] || 'dev';
+    return `<div class="tool-card" onclick="showDetail('${key}')">
+      <div class="t-head">
+        <div class="t-icon">${t.ic}</div>
+        <div class="t-name">${key}</div>
+        <div class="t-stars">★ ${t.stars.toLocaleString()}</div>
+      </div>
+      <div class="t-desc">${t.desc}</div>
+      <div class="t-tags">
+        <span class="t-tag" style="background:rgba(34,211,238,.1);color:var(--accent)">${t.ver}</span>
+        <span class="t-tag ${col}" style="background:rgba(96,165,250,.1);color:var(--blue)">${CATEGORIES[t.cat]}</span>
+        <span class="t-tag" style="background:rgba(255,255,255,.04);color:var(--muted)">${t.tools.length} tools</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function runSearch(query) {
+  if (!query || query.trim() === '') { renderGrid('all'); return; }
+  const q = query.toLowerCase();
+  const results = Object.entries(TOOLS).filter(([key,t]) =>
+    key.includes(q) || t.desc.toLowerCase().includes(q) || t.cat.includes(q) || t.tools.some(t2=>t2.includes(q))
+  );
+  const grid = document.getElementById('browseGrid');
+  document.getElementById('resultCount').textContent = results.length;
+  grid.innerHTML = results.length ? results.map(([key,t])=>{
+    const col = CAT_COLORS[t.cat] || 'dev';
+    return `<div class="tool-card" onclick="showDetail('${key}')">
+      <div class="t-head">
+        <div class="t-icon">${t.ic}</div>
+        <div class="t-name">${key}</div>
+        <div class="t-stars">★ ${t.stars.toLocaleString()}</div>
+      </div>
+      <div class="t-desc">${t.desc}</div>
+      <div class="t-tags">
+        <span class="t-tag" style="background:rgba(34,211,238,.1);color:var(--accent)">${t.ver}</span>
+        <span class="t-tag" style="background:rgba(96,165,250,.1);color:var(--blue)">${CATEGORIES[t.cat]}</span>
+        <span class="t-tag" style="background:rgba(255,255,255,.04);color:var(--muted)">${t.tools.length} tools</span>
+      </div>
+    </div>`;
+  }).join('') : '<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">🔍 No tools found for &quot;' + query + '&quot;</div>';
+}
+
+function showDetail(key) {
+  const t = TOOLS[key];
+  if (!t) return;
+  document.getElementById('selectedTool').textContent = key;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="tool-detail">
+      <div class="td-header">
+        <div style="width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--panel2);border:1px solid var(--line)">${t.ic}</div>
+        <div style="flex:1">
+          <div class="td-name">${key} <span class="td-ver">${t.ver}</span></div>
+          <div style="font-size:10px;color:var(--muted)">${t.desc}</div>
+        </div>
+        <div class="td-stars">★ ${t.stars.toLocaleString()}</div>
+      </div>
+      <div class="td-section"><span class="label">Category</span><span class="value">${CATEGORIES[t.cat]}</span></div>
+      <div class="td-section"><span class="label">License</span><span class="value">${t.license}</span></div>
+      <div class="td-section"><span class="label">Source</span><span class="value" style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:9px">${t.url}</span></div>
+      <div class="td-section"><span class="label">Dependencies</span><span class="value" style="font-size:9px;color:var(--muted)">${t.deps.join(' · ')}</span></div>
+      <div class="td-tools">
+        ${t.tools.map(t2 => `<span class="td-tool-item"><span class="e">✦</span> ${t2}</span>`).join('')}
+      </div>
+      <div class="td-install">
+        ${t.install}
+        <span class="cp-btn" onclick="navigator.clipboard.writeText('${t.install}')">copy</span>
+      </div>
+    </div>`;
+  switchTab('detail');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.res-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.res-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-'+tab));
+  if (tab === 'browse' && !document.getElementById('browseGrid').innerHTML) renderGrid('all');
+  if (tab === 'detail' && !document.getElementById('detailContent').innerHTML) showDetail('postgres');
+}
+
+function switchFilter(cat) {
+  document.querySelectorAll('.file-item').forEach(f => f.classList.remove('selected'));
+  document.querySelectorAll(`.file-item[data-category="${cat}"]`).forEach(f => f.classList.add('selected'));
+  document.querySelectorAll('.folder-main.open').forEach(f => f.classList.remove('open'));
+  document.querySelectorAll('.folder-children').forEach(c => c.parentElement.classList.add('open'));
+  renderGrid(cat);
+  switchTab('browse');
+  const lbl = cat === 'all' ? '30 tools' : cat === 'popular' ? '5 tools' : `${CATEGORIES[cat]||''} (${getTools(cat).length})`;
+  document.getElementById('resultCount').textContent = getTools(cat).length;
+}
+
+function runCliDemo(cmd) {
+  const term = document.getElementById('cliTerminal');
+  if (cmd === 'search data') {
+    term.innerHTML = `<div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry search data</span></div>
+<div class="term-line"><span class="hl">5 results (31ms)</span></div>
+<div class="term-line"><span class="out"> postgres-mcp   · query, schema, migration    · <span class="hl">4,321☆</span></span></div>
+<div class="term-line"><span class="out"> mysql-mcp      · query, schema, admin        · <span class="hl">2,567☆</span></span></div>
+<div class="term-line"><span class="out"> redis-mcp      · keys, strings, streams     · <span class="hl">1,987☆</span></span></div>
+<div class="term-line"><span class="out"> mongodb-mcp    · documents, aggregation      · <span class="hl">2,123☆</span></span></div>
+<div class="term-line"><span class="out"> elastic-mcp    · search, index, mapping      · <span class="hl">1,456☆</span></span></div>
+<div class="term-line"><span class="prompt">$</span> <span class="cmd"><span class="cursor"></span></span></div>`;
+  } else if (cmd === 'install postgres-mcp') {
+    term.innerHTML = `<div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry install postgres-mcp</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Resolved: postgres-mcp v2.1.0 (from GitHub)</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Cloned: /tmp/mcp-install/postgres-mcp</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Running: pip install -r requirements.txt</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Writing MCP config → ~/.config/mcp/servers.json</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Restart your MCP client to pick up new tools</span></div>
+<div class="term-line"><span class="prompt">$</span> <span class="cmd"><span class="cursor"></span></span></div>`;
+  } else if (cmd === 'publish') {
+    term.innerHTML = `<div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry publish ./my-awesome-mcp-tool --public</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Found: mcp_registry.json</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Validated: 5 tools, 3 dependencies</span></div>
+<div class="term-line"><span class="s">✓</span> <span class="out">Submitting to registry...</span></div>
+<div class="term-line"><span class="hl">✓ Published as "my-awesome-mcp-tool" v0.1.0</span></div>
+<div class="term-line"><span class="out">  Category: developer · License: MIT</span></div>
+<div class="term-line"><span class="out">  ⚡ PR opened: github.com/jasoneip01-pixel/mcp-registry/pull/12</span></div>
+<div class="term-line"><span class="prompt">$</span> <span class="cmd"><span class="cursor"></span></span></div>`;
+  } else if (cmd === 'list developer') {
+    term.innerHTML = `<div class="term-line"><span class="prompt">$</span> <span class="cmd">mcp-registry list --category developer</span></div>
+<div class="term-line"><span class="out"> Name              ✦ Tools    ⚡ Stars    License</span></div>
+<div class="term-line"><span class="out"> ──────────────────────────────────────────────</span></div>
+<div class="term-line"><span class="out"> git-mcp           12         <span class="hl">3,421</span>      MIT</span></div>
+<div class="term-line"><span class="out"> docker-mcp        8          <span class="hl">2,156</span>      MIT</span></div>
+<div class="term-line"><span class="out"> kubernetes-mcp    15         <span class="hl">1,892</span>      Apache-2.0</span></div>
+<div class="term-line"><span class="out"> eslint-mcp        5          <span class="hl">876</span>       MIT</span></div>
+<div class="term-line"><span class="out"> prettier-mcp      3          <span class="hl">543</span>       MIT</span></div>
+<div class="term-line"><span class="out"> typescript-mcp    4          <span class="hl">734</span>       MIT</span></div>
+<div class="term-line"><span class="prompt">$</span> <span class="cmd"><span class="cursor"></span></span></div>`;
+  }
+  switchTab('cli');
+}
+
+// ——— Init ———
+renderGrid('all');
+document.getElementById('selectedTool').textContent = '—';
+</script>
+</body>
+</html>

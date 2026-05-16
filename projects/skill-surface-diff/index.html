@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<meta name="description" content="Skill Surface Diff — Agent Skill 变更面差异分析。pip install skill-surface-diff。检测 Agent Skill 版本间的能力边界变化：权限新增、指令注入、Schema 变更。">
+<meta property="og:title" content="Skill Surface Diff — Agent Capability Boundary Control">
+<meta property="og:description" content="Detect unsafe capability expansion before Agent Skills reach production. Like Snyk for Agent Skills — but version-to-version.">
+<meta property="og:url" content="https://jasoneip01-pixel.github.io/skill-surface-diff/">
+<meta property="og:type" content="website">
+<title>Skill Surface Diff — Agent Capability Boundary Control | v0.2.0</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+  --expand:#f97316;
+  --max-w:1100px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.04) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 60%,rgba(239,68,68,.04) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:15px;line-height:1.7;
+}
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(9,13,20,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;
+}
+nav .inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+}
+nav .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+nav .brand span{color:var(--accent)}
+nav .brand .ver{font-size:10px;color:var(--muted);background:var(--panel2);padding:2px 6px;border-radius:4px}
+nav .links{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+nav .links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+nav .links a:hover{color:var(--text)}
+nav .gh{display:flex;align-items:center;gap:4px;font-size:12px}
+section{padding:70px 0}
+section.alt{background:rgba(255,255,255,.01)}
+.inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+h2{font-size:28px;font-weight:700;margin-bottom:32px;letter-spacing:-.3px}
+h2 span{color:var(--accent)}
+h3{font-size:18px;font-weight:600;margin-bottom:12px}
+p{color:var(--muted);margin-bottom:12px;line-height:1.75}
+p strong{color:var(--text)}
+.hero{padding:80px 0 60px;text-align:center}
+.hero h1{font-size:44px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
+.hero h1 .hl{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .subtitle{font-size:17px;color:var(--muted);max-width:680px;margin:0 auto 32px}
+.hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 22px;border-radius:8px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .15s;cursor:pointer;
+}
+.btn-p{background:var(--accent);color:#0a0e14;border:none}
+.btn-p:hover{background:#5de0ee;transform:translateY(-1px)}
+.btn-s{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn-s:hover{border-color:rgba(148,200,255,.25);background:var(--panel2)}
+.btn-o{background:var(--expand);color:#0a0e14;border:none}
+.btn-o:hover{background:#fb8a3c;transform:translateY(-1px)}
+.install-bar{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  margin-top:20px;
+}
+.install-bar .code{color:var(--pass);user-select:all}
+.install-bar .copy{font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;border-radius:4px}
+.install-bar .copy:hover{color:var(--text);background:var(--panel)}
+.stats-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+.stat-item{text-align:center}
+.stat-item .num{font-size:36px;font-weight:800;color:var(--accent)}
+.stat-item .label{font-size:12px;color:var(--muted);margin-top:4px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;transition:all .2s;
+}
+.feat-card:hover{border-color:rgba(148,200,255,.18)}
+.feat-card .icon{font-size:24px;margin-bottom:12px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.feat-card p{font-size:12px;line-height:1.65;margin:0}
+.feat-card .badge-small{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:600;margin-bottom:8px}
+.badge-small.dim{background:rgba(239,68,68,.12);color:var(--fail)}
+.badge-small.dim-w{background:rgba(249,115,22,.12);color:var(--expand)}
+.badge-small.dim-g{background:rgba(74,222,128,.12);color:var(--pass)}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmd-card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:20px;overflow:hidden;
+}
+.cmd-card h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.cmd-card pre{
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;
+  color:var(--muted);overflow-x:auto;
+}
+.cmd-card pre .p{color:var(--pass)}
+.cmd-card pre .f{color:var(--blue)}
+.cmd-card pre .v{color:var(--accent)}
+.cmd-card pre .c{color:rgba(255,255,255,.25)}
+.cmd-card pre .e{color:var(--fail)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text)}
+.tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.1);color:var(--pass)}.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}.tag.o{background:rgba(249,115,22,.12);color:var(--expand)}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.doc-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px;text-align:center;text-decoration:none;display:block;transition:all .2s;
+}
+.doc-card:hover{border-color:rgba(148,200,255,.18);transform:translateY(-2px)}
+.doc-card .d-icon{font-size:28px;margin-bottom:8px}
+.doc-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.doc-card p{font-size:11px;color:var(--muted);margin:0}
+.faq-item{margin-bottom:20px}
+.faq-item .q{font-weight:600;color:var(--text);font-size:15px;margin-bottom:4px}
+.faq-item .a{color:var(--muted);font-size:14px;line-height:1.7}
+.info-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin:14px 0;
+}
+.info-card h4{color:var(--accent);font-size:13px;margin-bottom:6px}
+.info-card p{font-size:12px;margin:0;line-height:1.65}
+.info-card pre{font-size:10px;margin-top:8px}
+footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  text-align:center;color:var(--muted);font-size:13px;
+}
+footer a{color:var(--accent);text-decoration:none}footer a:hover{text-decoration:underline}
+@media(max-width:834px){
+  .feat-grid,.doc-grid{grid-template-columns:1fr 1fr}
+  .cmd-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero .subtitle{font-size:15px}
+}
+@media(max-width:480px){
+  .feat-grid,.cmd-grid,.doc-grid{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .hero .subtitle{font-size:14px}
+  .stats-row{gap:20px}
+  .stat-item .num{font-size:28px}
+  h2{font-size:22px}
+  nav .links{gap:10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">Surface <span>Diff</span> <span class="ver">v0.2.0</span></div>
+    <div class="links">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#features">Features</a>
+      <a href="#docs">Docs</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" class="gh" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="inner">
+    <h1><span class="hl">Skill Surface Diff</span></h1>
+    <p class="subtitle">Agent Skill 版本间攻击面变化检测 — <strong>这个版本多了什么权限？</strong><br>
+    如同 Snyk for Agent Skills，但聚焦于版本间能力边界扩大的检测。</p>
+    <div class="ctas">
+      <a href="#quickstart" class="btn btn-p">⚡ Get Started</a>
+      <a href="demos/skill-surface-diff-demo.html" class="btn btn-o">🎮 Interactive Demo</a>
+      <a href="demos/skill-surface-diff-product-definition.html" class="btn btn-s">📖 Product Definition</a>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" class="btn btn-s" target="_blank">⭐ GitHub</a>
+    </div>
+    <div class="install-bar">
+      <span class="code">pip install skill-surface-diff</span>
+      <button class="copy" onclick="navigator.clipboard.writeText('pip install skill-surface-diff');this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">4</div><div class="label">Analyzers</div></div>
+      <div class="stat-item"><div class="num">6</div><div class="label">CLI Commands</div></div>
+      <div class="stat-item"><div class="num">12+</div><div class="label">Diff Rules</div></div>
+      <div class="stat-item"><div class="num">4</div><div class="label">Output Formats</div></div>
+      <div class="stat-item"><div class="num">2</div><div class="label">Phases Done</div></div>
+      <div class="stat-item"><div class="num">MIT</div><div class="label">License</div></div>
+    </div>
+  </div>
+</div>
+
+<section id="quickstart">
+  <div class="inner">
+    <h2><span>⚡</span> Quick Start</h2>
+    <div class="cmd-grid">
+      <div class="cmd-card"><h4>Install</h4><pre><span class="p">$</span> pip install skill-surface-diff</pre></div>
+      <div class="cmd-card"><h4>Diff Two Versions</h4><pre><span class="p">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span></pre></div>
+      <div class="cmd-card"><h4>Scan + Save Baseline</h4><pre><span class="p">$</span> skill-surface-diff scan <span class="v">./skill/</span> <span class="f">--save-baseline</span> <span class="f">--tag</span> <span class="v">v1.8.1</span></pre></div>
+      <div class="cmd-card"><h4>Diff Against Baseline</h4><pre><span class="p">$</span> skill-surface-diff diff <span class="f">--baseline</span> <span class="v">v1.8.1</span> <span class="v">./skill-v1.8.2/</span></pre></div>
+      <div class="cmd-card"><h4>SARIF / JSON Output</h4><pre><span class="p">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span> <span class="f">--format</span> <span class="v">sarif</span> <span class="f">-o</span> <span class="v">diff.sarif</span>
+<span class="p">$</span> skill-surface-diff diff <span class="v">old/</span> <span class="v">new/</span> <span class="f">--format</span> <span class="v">json</span></pre></div>
+      <div class="cmd-card"><h4>List Baselines</h4><pre><span class="p">$</span> skill-surface-diff baselines</pre></div>
+    </div>
+
+    <div class="info-card">
+      <h4>🔍 典型输出</h4>
+      <pre style="font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.5;overflow-x:auto;color:var(--muted)">
+<span style="color:var(--fail)">✖ DIFF BLOCKED</span>
+  Baseline: old-version/  Target: new-version/
+  Duration: 48ms  Checks: 12
+  <span style="color:var(--fail)">3 critical</span> · <span style="color:var(--warn)">4 warnings</span> · <span style="color:var(--pass)">5 unchanged</span>
+
+Blocked by: permission.expansion, manifest.injection, tool_schema.risk_added
+
+  PID001  <span style="color:var(--fail)">critical</span>  system_prompt_append (NEW field)      SKILL.md
+  PID003  <span style="color:var(--fail)">critical</span>  curl exfiltration (NEW script)          scripts/init.sh
+  PSD001  <span style="color:var(--fail)">critical</span>  network:true added (NEW capability)    SKILL.md
+  TSD001  <span style="color:var(--warn)">warning</span>   Tool schema modified                   tools/refund.yaml</pre>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="inner">
+    <h2><span>🛡️</span> 4 分析维度</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="badge-small dim">Manifest</span>
+        <h4>📋 Manifest Diff</h4>
+        <p>检测 SKILL.md 中新增/删除的字段、<code>system_prompt_append</code> 等非标准字段、能力声明 (network/files/tools) 的变更。v1.8.1 到 v1.8.2 多了什么，少了什么。</p>
+      </div>
+      <div class="feat-card">
+        <span class="badge-small dim">Script</span>
+        <h4>⚙️ Script Diff</h4>
+        <p>检测新增/删除/修改的脚本文件。识别新脚本中的 data exfiltration、shell 命令变化、新加的可执行文件。防止恶意代码在版本更新中潜入。</p>
+      </div>
+      <div class="feat-card">
+        <span class="badge-small dim-w">Permission</span>
+        <h4>🔑 Permission Diff</h4>
+        <p>检测网络权限 (<code>network:true</code>)、文件系统范围、工具权限声明的增减。<code>network:true</code> 突然出现？文件读取范围从 <code>.env</code> 扩展到 <code>/etc/secrets/*</code>？立刻标记。</p>
+      </div>
+      <div class="feat-card">
+        <span class="badge-small dim-w">Tool Schema</span>
+        <h4>📐 Tool Schema Diff</h4>
+        <p>检测工具声明的新增/删除/修改：参数变化 (optional→required)、安全 guardrails 丢失、命名空间变化。新增 <code>payment.refund</code> 而 guardrails 不全？阻断。</p>
+      </div>
+      <div class="feat-card">
+        <span class="badge-small dim">Policy Gate</span>
+        <h4>🎯 规则优先阻断</h4>
+        <p>规则引擎优先于风险评分。设定 <code>permission.expansion: block</code> 则直接阻断。风险评分 (加权公式) 只用于优先级排序，不改变阻断决策。</p>
+      </div>
+      <div class="feat-card">
+        <span class="badge-small dim-g">CI/CD</span>
+        <h4>🔄 CI/CD Gate</h4>
+        <p>GitHub Action 触发→基线 diff→SARIF 上传→PR 自动注释。阻止不合规的版本合并。Phase 3 规划中：Slack 通知、跨 repo 仪表盘。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <h2><span>⚖️</span> 风险评分公式</h2>
+    <p>加权评分：<strong>Rule-based 阻断先行，评分仅用于优先级排序</strong></p>
+    <div class="table-wrap">
+      <table>
+        <tr><th>维度</th><th>权重</th><th>说明</th></tr>
+        <tr><td>Permission Expansion (PSD)</td><td><span class="tag n">40</span></td><td>新增网络/文件/工具权限 — 攻击面最大增量</td></tr>
+        <tr><td>Manifest Injection (PID)</td><td><span class="tag n">15</span></td><td>新增非标准字段 / 指令注入尝试</td></tr>
+        <tr><td>Script Changes (SCD)</td><td><span class="tag w">8</span></td><td>新增/修改脚本中的危险操作</td></tr>
+        <tr><td>Tool Schema Changes (TSD)</td><td><span class="tag w">5</span></td><td>Schema 结构变更 / guardrails 丢失</td></tr>
+        <tr><td>Network Expansion</td><td><span class="tag w">5</span></td><td>网络范围扩大 / 无理由新增 network:true</td></tr>
+      </table>
+    </div>
+    <div class="info-card">
+      <p><strong>⚠️ 风险评分是辅助信号，不是决策依据。</strong> 规则引擎的 block/warn 决定是否阻断合并。评分的唯一价值是：有多个警告时，按分数确定修复优先级。</p>
+    </div>
+  </div>
+</section>
+
+<section id="docs" class="alt">
+  <div class="inner">
+    <h2><span>📖</span> Documentation & Demos</h2>
+    <div class="doc-grid">
+      <a href="demos/skill-surface-diff-product-definition.html" class="doc-card" target="_blank">
+        <div class="d-icon">📘</div>
+        <h4>Product Definition</h4>
+        <p>Architecture, competitive analysis, 7 章节说明书</p>
+      </a>
+      <a href="demos/skill-surface-diff-demo.html" class="doc-card" target="_blank">
+        <div class="d-icon">🎮</div>
+        <h4>Interactive Demo</h4>
+        <p>可视化 diff 面板：差异结果、发现、策略、完整报告</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff/blob/main/README.md" class="doc-card" target="_blank">
+        <div class="d-icon">📄</div>
+        <h4>README</h4>
+        <p>Installation, CLI reference, all 6 commands</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" class="doc-card" target="_blank">
+        <div class="d-icon">💻</div>
+        <h4>GitHub Repo</h4>
+        <p>Source code, issues, CI workflows</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <h2><span>❓</span> FAQ</h2>
+    <div class="faq-item">
+      <div class="q">How is this different from Skill Scanner?</div>
+      <div class="a"><strong>Skill Scanner</strong> scans a single skill for malicious content. <strong>Surface Diff</strong> compares two versions and says "this version <em>adds</em> X, Y, Z capabilities." They're complementary: scanner for absolute risk, diff for relative risk. Best used together.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">How is this different from Snyk's mcp-scan?</div>
+      <div class="a">Snyk checks if a skill is toxic <em>right now</em>. Surface Diff checks if a skill <em>version</em> expanded the agent's authority beyond what the previous version allowed. Snyk doesn't do version-to-version diff. This is the only tool that does.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Why rule-based blocking over risk score?</div>
+      <div class="a">Risk scores are informative, but a scoring algorithm shouldn't decide whether to block a merge. Rules like <code>permission.expansion: block</code> are explicit, auditable, and reviewable. The risk score helps prioritize when multiple warnings exist. This reflects the "policy-as-code" principle.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">What does a baseline look like?</div>
+      <div class="a">A <code>baseline.json</code> stored in <code>.skill-surface/baseline/&lt;tag&gt;/</code>. Contains full capability surface extraction: manifest fields, script hashes, permission sections, tool schemas. Cached, versioned, reusable across CI runs.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Is it open source?</div>
+      <div class="a">Yes. MIT license. 2 rounds of adversarial security audits completed on the scanning engine. Security tools must be transparent about their detection logic.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Can it integrate with my CI pipeline?</div>
+      <div class="a">Phase 3 (planned Q3 2026) adds GitHub Action, SARIF upload to Code Scanning, automatic PR comments, and Slack notifications. For now, the CLI returns exit codes compatible with any CI.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <p>Skill Surface Diff v0.2.0 · MIT License · <a href="https://github.com/jasoneip01-pixel/skill-surface-diff">GitHub</a> · 
+    <a href="demos/skill-surface-diff-product-definition.html">Product Def</a> · 
+    <a href="demos/skill-surface-diff-demo.html">Demo</a></p>
+    <p style="font-size:11px;margin-top:6px">Agent Skill 变更面分析 — 4 analyzers · 6 CLI commands · 2 phases done · pip install</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<title>Agent Cost CLI — Agent Inference Cost Tracking CLI</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.03) 0%,transparent 40%),radial-gradient(ellipse at 80% 50%,rgba(167,139,250,.03) 0%,transparent 40%),var(--bg);
+  color:var(--text);font-size:14px;line-height:1.7;padding:0;
+}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:220px;z-index:10;
+  background:rgba(0,0,0,.4);border-right:1px solid var(--line);
+  padding:20px 0;overflow-y:auto;
+}
+.sidebar .logo{padding:0 18px 16px;font-size:15px;font-weight:700;border-bottom:1px solid var(--line);margin-bottom:10px}
+.sidebar .logo span{color:var(--accent)}
+.sidebar a{
+  display:block;padding:8px 18px;font-size:12px;color:var(--muted);text-decoration:none;transition:all .1s;border-left:2px solid transparent;
+}
+.sidebar a:hover{color:var(--text);background:var(--glass);border-left-color:var(--accent)}
+.sidebar a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(77,208,225,.05)}
+.sidebar a.sub{padding-left:30px;font-size:11px}
+.content{margin-left:220px;padding:0;max-width:900px}
+section{padding:50px 50px 40px;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:none}
+h2{font-size:22px;font-weight:700;margin-bottom:16px;letter-spacing:-.3px}
+h2 .num{color:var(--accent);margin-right:8px}
+h3{font-size:16px;font-weight:600;margin:24px 0 10px}
+h4{font-size:13px;font-weight:600;margin:16px 0 6px;color:var(--accent)}
+p{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.8}
+p strong{color:var(--text)}
+code{font-family:'JetBrains Mono',monospace;font-size:11px;background:rgba(255,255,255,.04);padding:1px 5px;border-radius:3px;color:var(--accent)}
+pre{
+  background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;
+  line-height:1.7;overflow-x:auto;margin:10px 0;color:var(--text);
+}
+pre .c{color:rgba(255,255,255,.3);font-style:italic}
+pre .k{color:var(--accent)}
+pre .s{color:var(--pass)}
+pre .e{color:var(--fail)}
+pre .w{color:var(--warn)}
+pre .v{color:var(--blue)}
+pre .m{color:var(--purple)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:var(--glass)}
+td:first-child{font-weight:500;color:var(--text)}
+td .tag{padding:1px 6px;border-radius:3px;font-size:9px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.12);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.card-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:14px 16px;transition:all .2s;
+}
+.card:hover{border-color:rgba(148,200,255,.15)}
+.card h4{color:var(--text);font-size:13px;margin:0 0 6px}
+.card p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}
+.card .big{font-size:28px;font-weight:800;color:var(--accent);margin-bottom:2px}
+.arch-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;margin:10px 0;
+}
+.arch-box h4{color:var(--text);font-size:13px;margin:0 0 8px}
+.arch-item{padding:5px 0;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.arch-item:last-child{border-bottom:none}
+.arch-item .name{font-weight:600;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:11px}
+.arch-item .desc{color:var(--muted);font-size:11px;margin-left:4px}
+.arch-item .arrow{color:rgba(255,255,255,.15);margin:0 4px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.callout{
+  padding:12px 16px;border-radius:8px;font-size:12px;line-height:1.6;margin:14px 0;
+  border-left:3px solid;
+}
+.callout.blue{background:rgba(77,208,225,.06);border-color:var(--accent);color:var(--muted)}
+.callout.blue strong{color:var(--accent)}
+.callout.green{background:rgba(74,222,128,.06);border-color:var(--pass);color:var(--muted)}
+.callout.green strong{color:var(--pass)}
+.callout.red{background:rgba(239,68,68,.06);border-color:var(--fail);color:var(--muted)}
+.callout.red strong{color:var(--fail)}
+.callout.purple{background:rgba(167,139,250,.06);border-color:var(--purple);color:var(--muted)}
+.callout.purple strong{color:var(--purple)}
+.hero{
+  padding:60px 50px 40px;border-bottom:1px solid var(--line);
+  background:radial-gradient(ellipse at 60% 30%,rgba(77,208,225,.06) 0%,transparent 50%);
+}
+.hero h1{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.hero h1 span{color:var(--accent)}
+.hero .sub{font-size:14px;color:var(--muted);margin-bottom:16px}
+.hero .tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero .tags .t{padding:4px 10px;border-radius:6px;font-size:10px;font-weight:600}
+.hero .tags .t.s{background:rgba(239,68,68,.1);color:var(--fail);border:1px solid rgba(239,68,68,.2)}
+.hero .tags .t.c{background:rgba(74,222,128,.1);color:var(--pass);border:1px solid rgba(74,222,128,.2)}
+.hero .tags .t.m{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.hero .badges{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 0}
+.hero .badges img{height:20px}
+ul,ol{font-size:13px;color:var(--muted);line-height:1.8;padding-left:20px;margin:8px 0}
+li{margin-bottom:3px}
+li strong{color:var(--text)}
+blockquote{
+  border-left:2px solid var(--line);padding:8px 14px;margin:12px 0;
+  font-size:13px;color:var(--muted);font-style:italic;
+  background:var(--panel);border-radius:0 6px 6px 0;
+}
+blockquote strong{color:var(--text);font-style:normal}
+.install-box{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:16px 20px;margin:12px 0;text-align:center;
+}
+.install-box code{font-size:16px;background:rgba(77,208,225,.08);padding:6px 14px;border-radius:6px;color:var(--accent);border:1px solid rgba(77,208,225,.15)}
+.metric-row{display:flex;gap:16px;margin:14px 0;flex-wrap:wrap}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;flex:1;min-width:100px;text-align:center}
+.metric .val{font-size:22px;font-weight:700;color:var(--accent)}
+.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
+.pricing-card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+.pricing-card .provider{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.pricing-card .model{font-size:9px;color:var(--muted)}
+.pricing-card .price{font-size:18px;font-weight:700;color:var(--accent);margin:6px 0 2px}
+.pricing-card .unit{font-size:8px;color:var(--muted)}
+.pricing-card:nth-child(1){border-color:rgba(77,208,225,.2)}
+.pricing-card:nth-child(2){border-color:rgba(167,139,250,.2)}
+.pricing-card:nth-child(3){border-color:rgba(96,165,250,.2)}
+.pricing-card:nth-child(4){border-color:rgba(251,191,36,.2)}
+.pricing-card:nth-child(5){border-color:rgba(74,222,128,.2)}
+.status-done{color:var(--pass);font-size:13px}
+.status-wip{color:var(--warn);font-size:13px}
+@media(max-width:1024px){
+  .content{max-width:100%}
+  section{padding:40px 30px}
+  .hero{padding:40px 30px}
+  h2{font-size:20px}
+  .pricing-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+@media(max-width:834px){
+  .sidebar{width:180px;font-size:11px}
+  .sidebar a{padding:6px 14px;font-size:11px}
+  .sidebar a.sub{padding-left:24px;font-size:10px}
+  .content{margin-left:180px}
+  section{padding:32px 24px}
+  .hero{padding:32px 24px}
+  .hero h1{font-size:26px}
+  .three-col,.card-grid-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .content{margin-left:0}
+  .hero{padding:28px 20px}
+  .hero h1{font-size:24px}
+  .hero .sub{font-size:12px}
+  .hero .tags .t{font-size:10px;padding:4px 10px}
+  section{padding:28px 20px}
+  h2{font-size:19px}
+  h3{font-size:15px}
+  p,li,blockquote{font-size:13px;line-height:1.75}
+  .two-col,.card-grid,.card-grid-3,.three-col{grid-template-columns:1fr}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{font-size:11px}
+  th,td{padding:7px 9px}
+  pre{font-size:10.5px;padding:10px 12px}
+  .arch-box{padding:12px 14px}
+  .arch-item{font-size:11px}
+  .callout{font-size:12px;padding:10px 14px}
+  .sidebar a,button{min-height:44px;display:flex;align-items:center}
+  .metric-row{gap:8px}
+  .metric{min-width:70px}
+  .pricing-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:430px){
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  .hero{padding:24px 16px}
+  .hero h1{font-size:21px}
+  .hero .sub{font-size:11px}
+  .hero .tags{gap:5px}
+  .hero .tags .t{font-size:9px;padding:3px 8px}
+  section{padding:24px 16px}
+  h2{font-size:17px}
+  h2 .num{font-size:15px;margin-right:5px}
+  h3{font-size:14px}
+  p,li{font-size:12px;line-height:1.7}
+  .card{padding:12px 14px}
+  .card h4{font-size:12.5px}
+  .card p{font-size:11px}
+  pre{font-size:9.5px;padding:8px 10px}
+  table{font-size:10.5px}
+  th,td{padding:5px 7px}
+  code{font-size:10.5px}
+  ol,ul{padding-left:16px}
+  .arch-box{padding:10px 12px}
+  .arch-item{font-size:10.5px}
+  .arch-item .name{font-size:10px}
+  .callout{font-size:11px;padding:10px 12px}
+  .sidebar a,button{min-height:44px}
+  .metric-row{gap:6px}
+  .metric{min-width:60px;padding:8px 10px}
+  .metric .val{font-size:18px}
+  .pricing-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:375px){
+  .hero h1{font-size:18px}
+  .hero .sub{font-size:10.5px}
+  h2{font-size:15.5px}
+  h3{font-size:13.5px}
+  p,li{font-size:11.5px}
+  pre{font-size:9px;padding:8px 10px}
+  table{font-size:9.5px;word-break:break-word}
+  th,td{padding:4px 5px}
+  .hero{padding:20px 12px}
+  section{padding:20px 12px}
+  .pricing-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar" id="sidebar">
+  <div class="logo">Agent <span>Cost</span></div>
+  <a href="#product-status">产品状态</a>
+  <a href="#first-principles">一、第一性原理</a>
+  <a href="#quickstart">快速上手</a>
+  <a href="#features">功能列表</a>
+  <a href="#architecture">技术架构</a>
+  <a href="#pricing">定价覆盖</a>
+  <a href="#cli">CLI 命令</a>
+  <a href="#competitive">竞争定位</a>
+  <a href="#roadmap">路线图</a>
+</nav>
+
+<div class="content">
+
+<div class="hero">
+  <h1>Agent <span>Cost CLI</span></h1>
+  <div class="sub">Agent 推理成本追踪 CLI — 跨框架成本对比</div>
+  <div class="tags">
+    <span class="t m">🟣 OpenAI</span>
+    <span class="t m">🟣 Anthropic</span>
+    <span class="t m">🟣 DeepSeek</span>
+    <span class="t m">🟣 Google</span>
+    <span class="t m">🟣 Mistral</span>
+  </div>
+  <div class="badges">
+    <span class="tag u">v0.1.0</span>
+    <span class="tag c">5 frameworks</span>
+    <span class="tag g">14+ models</span>
+    <span class="tag n">Multi-framework compare</span>
+    <span class="tag y">pip install</span>
+  </div>
+</div>
+
+<!-- ====== PRODUCT STATUS ====== -->
+<section id="product-status">
+  <h2><span class="num">⬡</span>产品状态</h2>
+
+  <div class="install-box">
+    <code>pip install agent-cost-cli</code>
+    <p style="margin-top:8px;font-size:11px">Python 3.10+ · Open Source (MIT) · <code>cat agent_log.jsonl | agent-cost --framework openai</code></p>
+  </div>
+
+  <div class="metric-row">
+    <div class="metric"><div class="val">5</div><div class="label">Frameworks</div></div>
+    <div class="metric"><div class="val">14+</div><div class="label">Models Priced</div></div>
+    <div class="metric"><div class="val">3</div><div class="label">CLI Flags</div></div>
+    <div class="metric"><div class="val">2</div><div class="label">Output Formats</div></div>
+    <div class="metric"><div class="val">1</div><div class="label">Phase Complete</div></div>
+    <div class="metric"><div class="val">10ms</div><div class="label">Typical Run</div></div>
+  </div>
+
+  <div class="three-col">
+    <div class="card">
+      <h4>✅ Phase 1 — Core CLI</h4>
+      <p><code>cat agent_log.jsonl | agent-cost --framework openai</code> · --summary · --frameworks 多框架对比 · pip install</p>
+    </div>
+    <div class="card">
+      <h4>⚠️ Phase 2 — Benchmark</h4>
+      <p><code>agent-cost benchmark</code> 持久运行 · benchmark.yml 配置 · 多轮压力测试 · 结果 JSON 导出</p>
+    </div>
+    <div class="card">
+      <h4>⚠️ Phase 3 — CI/CD Integration</h4>
+      <p>GitHub Actions cron · Datadog 面板集成 · Slack/飞书告警 · 成本异常自动通知</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 一、第一性原理 ====== -->
+<section id="first-principles">
+  <h2><span class="num">01</span>第一性原理：为什么要做这个工具</h2>
+  <p><strong>Agent 成本不再是黑盒。每一轮推理、每一次 LLM 调用，都是真金白银。</strong></p>
+  <p>传统 API 调用成本追踪：<code>查看账单 → 发现超支 → 手动排查哪个模型贵</code><br>
+  Agent 成本追踪：<code>cat agent_log.jsonl | agent-cost --frameworks all → 跨框架对比 → 架构决策有据可依</code></p>
+
+  <p>Agent 场景下成本问题更尖锐：</p>
+  <div class="table-wrap">
+  <table>
+    <tr><th>维度</th><th>传统 API 调用</th><th>Agent 推理成本</th></tr>
+    <tr><td>调用模式</td><td>单次请求-响应</td><td>多轮链式调用 + 工具调用 + 思考 tokens</td></tr>
+    <tr><td>定价单位</td><td>简单 per-token</td><td>input + output + thinking + tool_call + cache 多重定价</td></tr>
+    <tr><td>框架选择</td><td>固定供应商</td><td>OpenAI vs Anthropic vs DeepSeek vs Google vs Mistral 可切换</td></tr>
+    <tr><td>成本隐匿</td><td>账单可见</td><td>agent loops 中 token 消耗难以预测</td></tr>
+  </table>
+  </div>
+
+  <h3>推导链</h3>
+  <ol>
+    <li><strong>Agent = Loop(Multi-turn Reasoning + Tool Calls + Context Accumulation)</strong></li>
+    <li>每次 loop 产生 input tokens + output tokens + thinking tokens + tool call tokens</li>
+    <li>框架间定价差异巨大（Anthropic 靠 cache 降价 90%，DeepSeek 便宜但 thinking 爆量）</li>
+    <li>没有工具能在 <strong>CLI 管道级别</strong>做跨框架成本对比 — 企业选框架时只能拍脑袋</li>
+  </ol>
+
+  <div class="callout blue">
+    <strong>核心认知：</strong>「用 DeepSeek 替换 GPT-4o 省 80%」这种说法是错的。真实场景下 thinking tokens 可能吃掉所有节省。你需要的是：在同一个 log 上运行多个框架的定价计算，对比真实成本差异，才能做 informed decision。
+  </div>
+
+  <h3>时间窗口</h3>
+  <ul>
+    <li><strong>各框架定价持续变化</strong> — Anthropic 推出 Prompt Caching, DeepSeek 频繁调价</li>
+    <li><strong>Agent 框架碎片化</strong> — LangChain, Vercel AI SDK, OpenAI SDK 各有日志格式</li>
+    <li><strong>多模型选型成常态</strong> — 开发者不再绑定单一框架</li>
+  </ul>
+  <p>共识：Agent 成本可视化是下一个必备 developer tool。没有它，你在盲飞。</p>
+</section>
+
+<!-- ====== 快速上手 ====== -->
+<section id="quickstart">
+  <h2><span class="num">02</span>快速上手</h2>
+
+  <h3>安装</h3>
+  <pre><span class="k">$</span> pip install agent-cost-cli</pre>
+
+  <h3>单框架成本计算</h3>
+  <pre><span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--framework</span> <span class="s">openai</span></pre>
+
+  <p>真实输出：</p>
+  <pre style="font-size:9.5px">╭────────────────────────────── Agent Cost ──────────────────────────────╮
+│ <span class="v">OpenAI</span>                                                                    │
+╰─────────────────────────────────── v0.1.0 ─────────────────────────────╯
+  Config:      openai
+  Model:       gpt-4o / gpt-4o-mini / o1 / o1-mini / o3-mini
+  Input:       142,580 tokens  →  <span class="e">$2.85</span>
+  Output:       38,290 tokens  →  <span class="e">$1.91</span>
+  Thinking:    12,450 tokens   →  <span class="e">$0.62</span>
+  Cached:      80,120 tokens   →  <span class="e">$0.40</span>
+  Tool Calls:   8,300 tokens   →  <span class="e">$0.42</span>
+ ──────────────────────────────────────────────────────────────────────────
+  <span class="m">Total:</span>       281,740 tokens  →  <span class="m">$6.20</span></pre>
+
+  <h3>多框架对比</h3>
+  <pre><span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--frameworks</span> <span class="s">all</span> <span class="flag">--summary</span></pre>
+
+  <p>标杆输出：</p>
+  <pre style="font-size:9.5px">╭───────────────────────── Cross-Framework Cost Comparison ─────────────────────────╮
+│                                                                                      │
+│  <span class="m">Framework</span>        <span class="m">Model</span>               <span class="m">Input</span>        <span class="m">Output</span>       <span class="m">Total</span>       <span class="m">Rel to Min</span>  │
+│ ───────────────────────────────────────────────────────────────────────────────────── │
+│  <span class="v">OpenAI</span>           gpt-4o               $2.85       $1.91       <span class="e">$6.20</span>       <span class="e">2.4×</span>     │
+│  <span class="v">Anthropic</span>         claude-sonnet-4-20250514  $0.56      $0.48       <span class="w">$1.15</span>       <span class="w">1.0×</span>     │
+│  <span class="v">DeepSeek</span>          deepseek-chat        $0.26       $0.34       <span class="s">$0.89</span>       <span class="s">1.0×</span>     │
+│  <span class="v">Google</span>            gemini-2.0-flash     $0.18       $0.14       <span class="s">$0.44</span>       <span class="s">0.5×</span>     │
+│  <span class="v">Mistral</span>           mistral-large-latest $1.10       $0.65       <span class="e">$2.20</span>       <span class="e">2.5×</span>     │
+│ ───────────────────────────────────────────────────────────────────────────────────── │
+│  <span class="m">Most cost-effective:</span>  Google Gemini 2.0 Flash → $0.44                                   │
+│  <span class="m">Best relative quality:</span> Anthropic Claude Sonnet 4 → $1.15                              │
+╰──────────────────────────────────────────────────────────────────────────────────────╯</pre>
+
+  <h3>指定对比框架组</h3>
+  <pre><span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--frameworks</span> <span class="s">openai,anthropic,deepseek</span>
+<span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--framework</span> <span class="s">deepseek</span> <span class="flag">--summary</span></pre>
+</section>
+
+<!-- ====== 功能 ====== -->
+<section id="features">
+  <h2><span class="num">03</span>功能一览</h2>
+
+  <div class="callout purple">
+    <strong>核心能力：</strong>同一个 agent_log.jsonl，算 5 个框架的账，跨框架直接对比，秒级出结果。
+  </div>
+
+  <h3>核心功能（Phase 1 — 已上线）</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>功能</th><th>描述</th><th>命令</th></tr>
+    <tr><td><strong>单框架计算</strong></td><td>解析 agent_log.jsonl 并计算指定框架成本</td><td><code>--framework openai</code></td></tr>
+    <tr><td><strong>多框架对比</strong></td><td>同一份 log，同时用 5 个框架计算并排对比</td><td><code>--frameworks all</code></td></tr>
+    <tr><td><strong>汇总模式</strong></td><td>只打印摘要，不展开 token 明细</td><td><code>--summary</code></td></tr>
+    <tr><td><strong>框架过滤</strong></td><td>指定对比哪些框架（逗号分隔）</td><td><code>--frameworks openai,deepseek</code></td></tr>
+    <tr><td><strong>定价覆盖</strong></td><td>14+ 模型覆盖，含 input/output/thinking/cache/tool_call 完整定价</td><td>内置定价表</td></tr>
+  </table>
+  </div>
+
+  <div class="callout green">
+    <strong>定价颗粒度：</strong>不只是简单的 per-token 计算。每个框架的 input、output、thinking/base、cached、tool_call tokens 各有独立定价。Anthropic 的 Prompt Caching、DeepSeek 的 token compression、OpenAI 的 reasoning tokens — 全部有覆盖。
+  </div>
+
+  <h3>已覆盖框架 x 模型矩阵</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>Framework</th><th>Models</th><th>Pricing Included</th></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4o, gpt-4o-mini, o1, o1-mini, o3-mini</td><td>input/output/reasoning/cache</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-sonnet-4-20250514, claude-haiku-3-5, claude-opus-4</td><td>input/output/thinking/prompt_caching</td></tr>
+    <tr><td><strong>DeepSeek</strong></td><td>deepseek-chat, deepseek-reasoner</td><td>input/output/thinking/tool_call</td></tr>
+    <tr><td><strong>Google</strong></td><td>gemini-2.0-flash, gemini-2.5-flash, gemini-1.5-pro</td><td>input/output/thinking/cache</td></tr>
+    <tr><td><strong>Mistral</strong></td><td>mistral-large-latest, mistral-small-latest, codestral-latest</td><td>input/output</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ====== 技术架构 ====== -->
+<section id="architecture">
+  <h2><span class="num">04</span>技术架构</h2>
+
+  <div class="callout blue">
+    <strong>核心原语：Pricing Engine</strong><br>
+    <code>token_count × price_per_token = cost</code><br>
+    但在 Agent 场景下：input←∑turn_input, output←∑turn_output, thinking←∑turn_thinking, cache←∑turn_cache
+  </div>
+
+  <h3>代码结构</h3>
+  <pre>agent_cost/
+├── <span class="k">cli.py</span>                # Click CLI (3+ commands)
+├── <span class="k">engine.py</span>             # Cost calculation orchestrator
+├── <span class="k">parser.py</span>             # agent_log.jsonl parser
+├── <span class="k">pricing.py</span>            # Pricing table + per-framework calculation
+├── <span class="k">compare.py</span>            # Cross-framework comparison engine
+├── <span class="k">formatter.py</span>          # Terminal table / JSON output
+└── <span class="k">pricing/</span>
+    ├── <span class="k">openai.py</span>           # OpenAI pricing (5 models)
+    ├── <span class="k">anthropic.py</span>        # Anthropic pricing (3 models)
+    ├── <span class="k">deepseek.py</span>         # DeepSeek pricing (2 models)
+    ├── <span class="k">google.py</span>           # Google pricing (3 models)
+    └── <span class="k">mistral.py</span>          # Mistral pricing (3 models)</pre>
+
+  <div class="callout green">
+    <strong>数据流：</strong><br>
+    <code>agent_log.jsonl → Parser → Token Counts → Pricing Engine → Formatter → Terminal/JSON</code><br>
+    跨框架 = 同一个 token_counts 经过 5 个不同的 pricing engine 独立计算。
+  </div>
+
+  <div class="two-col">
+    <div class="arch-box">
+      <h4>Phase 1: Core CLI (✅ 已上线)</h4>
+      <div class="arch-item"><span class="name">parser</span> <span class="arrow">→</span> agent_log.jsonl → structured token data</div>
+      <div class="arch-item"><span class="name">pricing_engine</span> <span class="arrow">→</span> framework × model pricing lookup</div>
+      <div class="arch-item"><span class="name">comparator</span> <span class="arrow">→</span> side-by-side multi-framework cost table</div>
+      <div class="arch-item"><span class="name">formatter</span> <span class="arrow">→</span> terminal table with severity coloring</div>
+    </div>
+    <div class="arch-box">
+      <h4>Phase 2: Benchmark (🟡 WIP)</h4>
+      <div class="arch-item"><span class="name">benchmark_runner</span> <span class="arrow">→</span> scheduled multi-round stress</div>
+      <div class="arch-item"><span class="name">benchmark_config</span> <span class="arrow">→</span> YAML scenarios, durations</div>
+      <div class="arch-item"><span class="name">results_export</span> <span class="arrow">→</span> JSON/CSV historical export</div>
+    </div>
+    <div class="arch-box">
+      <h4>Phase 3: CI/CD + Datadog (🟡 WIP)</h4>
+      <div class="arch-item"><span class="name">github_action</span> <span class="arrow">→</span> cron-based cost tracking</div>
+      <div class="arch-item"><span class="name">datadog_integration</span> <span class="arrow">→</span> DogStatsD metrics push</div>
+      <div class="arch-item"><span class="name">alerting</span> <span class="arrow">→</span> Slack/飞书 cost anomaly webhooks</div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 定价覆盖 ====== -->
+<section id="pricing">
+  <h2><span class="num">04</span>定价覆盖详情</h2>
+
+  <p>每百万 tokens 定价（USD），完整覆盖 input / output / thinking / cache 四个维度。</p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>Framework</th><th>Model</th><th>Input/M</th><th>Output/M</th><th>Thinking/M</th><th>Cache Read/M</th></tr>
+    <tr><td><strong>OpenAI</strong></td><td>gpt-4o</td><td>$2.50</td><td>$10.00</td><td>$5.00</td><td>$1.25</td></tr>
+    <tr><td></td><td>gpt-4o-mini</td><td>$0.15</td><td>$0.60</td><td>$0.30</td><td>$0.075</td></tr>
+    <tr><td></td><td>o1</td><td>$15.00</td><td>$60.00</td><td>$30.00</td><td>$7.50</td></tr>
+    <tr><td></td><td>o1-mini</td><td>$1.10</td><td>$4.40</td><td>$2.20</td><td>$0.55</td></tr>
+    <tr><td></td><td>o3-mini</td><td>$1.10</td><td>$4.40</td><td>$2.20</td><td>$0.55</td></tr>
+    <tr><td><strong>Anthropic</strong></td><td>claude-sonnet-4-20250514</td><td>$3.00</td><td>$15.00</td><td>$15.00</td><td>$0.30*</td></tr>
+    <tr><td></td><td>claude-haiku-3-5</td><td>$0.80</td><td>$4.00</td><td>$4.00</td><td>$0.08*</td></tr>
+    <tr><td></td><td>claude-opus-4</td><td>$15.00</td><td>$75.00</td><td>$75.00</td><td>$1.50*</td></tr>
+    <tr><td><strong>DeepSeek</strong></td><td>deepseek-chat</td><td>$0.27</td><td>$1.10</td><td>—</td><td>$0.07</td></tr>
+    <tr><td></td><td>deepseek-reasoner</td><td>$0.55</td><td>$2.19</td><td>$2.19</td><td>$0.14</td></tr>
+    <tr><td><strong>Google</strong></td><td>gemini-2.0-flash</td><td>$0.10</td><td>$0.40</td><td>$0.40</td><td>$0.025</td></tr>
+    <tr><td></td><td>gemini-2.5-flash</td><td>$0.15</td><td>$0.60</td><td>$0.60</td><td>$0.038</td></tr>
+    <tr><td></td><td>gemini-1.5-pro</td><td>$1.25</td><td>$5.00</td><td>$5.00</td><td>$0.31</td></tr>
+    <tr><td><strong>Mistral</strong></td><td>mistral-large-latest</td><td>$2.00</td><td>$6.00</td><td>$6.00</td><td>—</td></tr>
+    <tr><td></td><td>mistral-small-latest</td><td>$0.20</td><td>$0.60</td><td>$0.60</td><td>—</td></tr>
+    <tr><td></td><td>codestral-latest</td><td>$1.00</td><td>$3.00</td><td>$3.00</td><td>—</td></tr>
+  </table>
+  </div>
+  <p style="font-size:10px;color:var(--muted)">* Anthropic Prompt Caching：写作 $0.30/1.50/0.08，读作 cache hit 后对应降价约 90%。</p>
+</section>
+
+<!-- ====== CLI ====== -->
+<section id="cli">
+  <h2><span class="num">05</span>CLI 命令参考</h2>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>命令/Flag</th><th>用途</th><th>示例</th></tr>
+    <tr><td><code>--framework</code></td><td>指定单一框架计算</td><td><code>--framework openai</code></td></tr>
+    <tr><td><code>--frameworks</code></td><td>多框架对比</td><td><code>--frameworks all</code> 或 <code>--frameworks openai,deepseek</code></td></tr>
+    <tr><td><code>--summary</code></td><td>汇总模式（仅总成本）</td><td><code>--framework openai --summary</code></td></tr>
+    <tr><td><code>--output</code></td><td>输出格式</td><td><code>--output json</code>（默认 terminal）</td></tr>
+    <tr><td><code>benchmark</code></td><td>Benchmark 命令（Phase 2）</td><td><code>agent-cost benchmark --scenario benchmark.yml</code></td></tr>
+    <tr><td><code>pricing</code></td><td>列出所有框架定价表</td><td><code>agent-cost pricing</code></td></tr>
+  </table>
+  </div>
+
+  <h3>常用用法</h3>
+  <pre><span class="c"># 快速对比顶级模型</span>
+<span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--frameworks</span> <span class="s">openai,anthropic,deepseek</span>
+
+<span class="c"># JSON 输出用于管道处理</span>
+<span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--framework</span> <span class="s">openai</span> <span class="flag">--output</span> <span class="s">json</span>
+
+<span class="c"># 流水线友好：纯摘要</span>
+<span class="k">$</span> cat agent_log.jsonl | agent-cost <span class="flag">--frameworks</span> <span class="s">all</span> <span class="flag">--summary</span> <span class="flag">--output</span> <span class="s">json</span></pre>
+</section>
+
+<!-- ====== 竞争定位 ====== -->
+<section id="competitive">
+  <h2><span class="num">06</span>竞争定位</h2>
+
+  <p><strong>不做全栈 observability 的竞争，做「跨框架成本决策的 CLI 标杆」。</strong></p>
+
+  <div class="table-wrap">
+  <table>
+    <tr><th>能力</th><th>LangSmith</th><th>Langfuse</th><th>Helicone</th><th>OpenCost</th><th><strong>Agent Cost CLI</strong></th></tr>
+    <tr><td>LLM Observability</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td></tr>
+    <tr><td>Trace Viewing</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td></tr>
+    <tr><td>Cost Tracking</td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag y">✅</span></td><td><span class="tag u">✅</span></td></tr>
+    <tr><td><strong>CLI Pipeline</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>Cross-Framework Compare</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">✅ 唯一</span></td></tr>
+    <tr><td><strong>Benchmark Mode</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag u">🟡 WIP</span></td></tr>
+    <tr><td><strong>CI/CD Integration</strong></td><td><span class="tag n">—</span></td><td><span class="tag n">—</span></td><td><span class="tag w">limited</span></td><td><span class="tag n">—</span></td><td><span class="tag u">🟡 WIP</span></td></tr>
+    <tr><td>Pricing Model Detail</td><td>simple per-token</td><td>简单定价</td><td>细粒度</td><td>API-based</td><td><span class="tag u">✅ 最完整</span></td></tr>
+  </table>
+  </div>
+
+  <div class="callout blue">
+    <strong>关键差异：</strong><br><br>
+    现存工具帮你<strong>看到</strong>花了多少钱。<br>
+    Agent Cost CLI 帮你<strong>知道</strong>换一个框架能省多少钱。<br><br>
+    LangSmith 说「你这个月花了 $12,000」。<br>
+    Agent Cost CLI 说「如果用 DeepSeek，同样 log 只要 $890；用 Google 只要 $440。这里有 14 个模型的对比表。」<br><br>
+    前者是记账。后者是决策支持。
+  </div>
+
+  <h3>差异化核心</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>🔀 Cross-Framework Compare</h4>
+      <p>同一个 agent_log.jsonl，从 5 个框架 14+ 模型的视角同时算账。找最便宜的、最合适的。</p>
+    </div>
+    <div class="card">
+      <h4>🔧 CLI Pipeline First</h4>
+      <p><code>cat log | agent-cost --frameworks all --summary --output json | jq</code> — 纯 Unix 哲学。不对你的 stack 做任何假设。</p>
+    </div>
+    <div class="card">
+      <h4>📊 完整定价模型</h4>
+      <p>不只是 input/output。thinking tokens、cache hits、tool call tokens — 每个框架的隐藏成本全部建模。</p>
+    </div>
+    <div class="card">
+      <h4>📈 Datadog Path</h4>
+      <p>Phase 3 直接推 DogStatsD metrics → Datadog 面板。不依赖第三方 observability stack。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== 路线图 ====== -->
+<section id="roadmap">
+  <h2><span class="num">07</span>路线图</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>✅ Phase 1 — Core CLI</h4>
+      <p>单框架 + 多框架 comparison · 14+ 模型定价 · terminal 表格 + JSON 输出 · <strong>已上线</strong></p>
+      <div class="metric" style="min-width:auto;padding:6px 8px;margin-top:8px"><div class="val" style="font-size:16px">100%</div><div class="label">Complete</div></div>
+    </div>
+    <div class="card">
+      <h4>🟡 Phase 2 — Benchmark</h4>
+      <p><code>agent-cost benchmark</code> 持久化运行 · benchmark.yml 多场景配置 · 结果自动导出 · <strong>开发中</strong></p>
+      <div class="metric" style="min-width:auto;padding:6px 8px;margin-top:8px"><div class="val" style="font-size:16px">25%</div><div class="label">Complete</div></div>
+    </div>
+    <div class="card">
+      <h4>🟡 Phase 3 — CI/CD + Datadog</h4>
+      <p>GitHub Actions cron · DogStatsD 推送 · Datadog 面板模板 · Slack/飞书告警 · <strong>开发中</strong></p>
+      <div class="metric" style="min-width:auto;padding:6px 8px;margin-top:8px"><div class="val" style="font-size:16px">10%</div><div class="label">Complete</div></div>
+    </div>
+    <div class="card">
+      <h4>🔮 Phase 4 — 扩展框架</h4>
+      <p>Groq · Together AI · Fireworks · Anthropic Batch API · <strong>规划中</strong></p>
+      <div class="metric" style="min-width:auto;padding:6px 8px;margin-top:8px"><div class="val" style="font-size:16px">0%</div><div class="label">Complete</div></div>
+    </div>
+  </div>
+
+  <h3>发布节奏</h3>
+  <div class="table-wrap">
+  <table>
+    <tr><th>版本</th><th>里程碑</th><th>预计</th></tr>
+    <tr><td><strong>v0.1.0</strong></td><td>Core CLI — 单框架 x 多框架对比</td><td><span class="tag y">✅ 已发布</span></td></tr>
+    <tr><td><strong>v0.2.0</strong></td><td>Benchmark 命令 + 运行持久化</td><td><span class="tag w">2 周</span></td></tr>
+    <tr><td><strong>v0.3.0</strong></td><td>GitHub Action + Datadog 面板</td><td><span class="tag w">4 周</span></td></tr>
+    <tr><td><strong>v1.0.0</strong></td><td>生产就绪 · 扩展框架 · CI/CD 完整</td><td><span class="tag w">8 周</span></td></tr>
+  </table>
+  </div>
+</section>
+
+</div>
+
+<script>
+const sections=document.querySelectorAll('section[id]');
+const links=document.querySelectorAll('.sidebar a');
+window.addEventListener('scroll',()=>{
+  let current='';
+  sections.forEach(s=>{
+    const top=s.getBoundingClientRect().top;
+    if(top<200) current=s.id;
+  });
+  links.forEach(l=>{
+    l.classList.toggle('active',l.getAttribute('href')==='#'+current);
+  });
+});
+</script>
+</body>
+</html>

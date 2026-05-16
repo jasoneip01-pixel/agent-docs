@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<meta name="description" content="agent-datadog — Cross-Framework Agent Observability Platform. Fork of AgentWatch with cost comparison across 5 frameworks and 14 models.">
+<meta property="og:title" content="Agent Datadog — Cross-Framework Agent Observability">
+<meta property="og:description" content="Like Datadog for AI Agents. Cost/latency/error observability across 5 frameworks, 14 models. Open source (MIT).">
+<meta property="og:url" content="https://jasoneip01-pixel.github.io/agent-datadog/">
+<meta property="og:type" content="website">
+<title>Agent Datadog — Cross-Framework Agent Observability | v0.1.0</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+  --max-w:1100px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.04) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.04) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:15px;line-height:1.7;
+}
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(9,13,20,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;
+}
+nav .inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+}
+nav .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+nav .brand span{color:var(--accent)}
+nav .brand .ver{font-size:10px;color:var(--muted);background:var(--panel2);padding:2px 6px;border-radius:4px}
+nav .links{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+nav .links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+nav .links a:hover{color:var(--text)}
+nav .gh{display:flex;align-items:center;gap:4px;font-size:12px}
+section{padding:70px 0}
+section.alt{background:rgba(255,255,255,.01)}
+.inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+h2{font-size:28px;font-weight:700;margin-bottom:32px;letter-spacing:-.3px}
+h2 span{color:var(--accent)}
+h3{font-size:18px;font-weight:600;margin-bottom:12px}
+p{color:var(--muted);margin-bottom:12px;line-height:1.75}
+p strong{color:var(--text)}
+.hero{padding:80px 0 60px;text-align:center}
+.hero h1{font-size:44px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
+.hero h1 .hl{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .subtitle{font-size:17px;color:var(--muted);max-width:600px;margin:0 auto 32px}
+.hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 22px;border-radius:8px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .15s;cursor:pointer;
+}
+.btn-p{background:var(--accent);color:#0a0e14;border:none}
+.btn-p:hover{background:#5de0ee;transform:translateY(-1px)}
+.btn-s{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn-s:hover{border-color:rgba(148,200,255,.25);background:var(--panel2)}
+.install-bar{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  margin-top:20px;
+}
+.install-bar .code{color:var(--pass);user-select:all}
+.install-bar .copy{font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;border-radius:4px}
+.install-bar .copy:hover{color:var(--text);background:var(--panel)}
+.stats-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+.stat-item{text-align:center}
+.stat-item .num{font-size:36px;font-weight:800;color:var(--accent)}
+.stat-item .label{font-size:12px;color:var(--muted);margin-top:4px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;transition:all .2s;
+}
+.feat-card:hover{border-color:rgba(148,200,255,.18)}
+.feat-card .icon{font-size:24px;margin-bottom:12px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.feat-card p{font-size:12px;line-height:1.65;margin:0}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmd-card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:20px;overflow:hidden;
+}
+.cmd-card h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.cmd-card pre{
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;
+  color:var(--muted);overflow-x:auto;
+}
+.cmd-card pre .p{color:var(--pass)}
+.cmd-card pre .f{color:var(--blue)}
+.cmd-card pre .v{color:var(--accent)}
+.cmd-card pre .c{color:rgba(255,255,255,.25)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text)}
+.tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.1);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.doc-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px;text-align:center;text-decoration:none;display:block;transition:all .2s;
+}
+.doc-card:hover{border-color:rgba(148,200,255,.18);transform:translateY(-2px)}
+.doc-card .d-icon{font-size:28px;margin-bottom:8px}
+.doc-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.doc-card p{font-size:11px;color:var(--muted);margin:0}
+.faq-item{margin-bottom:20px}
+.faq-item .q{font-weight:600;color:var(--text);font-size:15px;margin-bottom:4px}
+.faq-item .a{color:var(--muted);font-size:14px;line-height:1.7}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:20px}
+.pricing-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;text-align:center;transition:all .2s;
+}
+.pricing-card:hover{border-color:rgba(148,200,255,.18)}
+.pricing-card .fw-icon{font-size:20px;margin-bottom:8px}
+.pricing-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.pricing-card .count{font-size:28px;font-weight:800;color:var(--accent);margin:4px 0}
+.pricing-card .range{font-size:11px;color:var(--muted)}
+.pricing-card .best{font-size:10px;color:var(--pass);margin-top:6px}
+footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  text-align:center;color:var(--muted);font-size:13px;
+}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media(max-width:834px){
+  .feat-grid,.doc-grid,.pricing-grid{grid-template-columns:1fr 1fr}
+  .cmd-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero .subtitle{font-size:15px}
+}
+@media(max-width:480px){
+  .feat-grid,.cmd-grid,.doc-grid,.pricing-grid{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .hero .subtitle{font-size:14px}
+  .stats-row{gap:20px}
+  .stat-item .num{font-size:28px}
+  h2{font-size:22px}
+  nav .links{gap:10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">Agent <span>Datadog</span> <span class="ver">v0.1.0</span></div>
+    <div class="links">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#features">Features</a>
+      <a href="#models">Models</a>
+      <a href="#docs">Docs</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog" class="gh" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="inner">
+    <h1><span class="hl">Cross-Framework</span> Agent Observability</h1>
+    <p class="subtitle">Cost, latency, and error observability across <strong>5 frameworks</strong> and <strong>14 models</strong> — like <strong>Datadog</strong> for AI Agents. Fork of AgentWatch with a cross-framework comparison layer.</p>
+    <div class="ctas">
+      <a href="#quickstart" class="btn btn-p">⚡ Get Started</a>
+      <a href="#docs" class="btn btn-s">📖 Documentation</a>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog" class="btn btn-s" target="_blank">⭐ GitHub</a>
+    </div>
+    <div class="install-bar">
+      <span class="code">git clone https://github.com/jasoneip01-pixel/agent-datadog</span>
+      <button class="copy" onclick="navigator.clipboard.writeText('git clone https://github.com/jasoneip01-pixel/agent-datadog');this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">5</div><div class="label">Frameworks</div></div>
+      <div class="stat-item"><div class="num">14</div><div class="label">Models</div></div>
+      <div class="stat-item"><div class="num">2</div><div class="label">API Endpoints</div></div>
+      <div class="stat-item"><div class="num">364</div><div class="label">FastAPI Lines</div></div>
+      <div class="stat-item"><div class="num">3</div><div class="label">Roadmap Phases</div></div>
+      <div class="stat-item"><div class="num">MIT</div><div class="label">License</div></div>
+    </div>
+  </div>
+</div>
+
+<section id="quickstart">
+  <div class="inner">
+    <h2><span>⚡</span> Quick Start</h2>
+    <div class="cmd-grid">
+      <div class="cmd-card"><h4>Clone & Install</h4><pre><span class="p">$</span> git clone https://github.com/jasoneip01-pixel/agent-datadog
+<span class="p">$</span> cd agent-datadog
+<span class="p">$</span> pip install -r requirements.txt
+<span class="p">$</span> uvicorn main:app --reload</pre></div>
+      <div class="cmd-card"><h4>Cost Compare API</h4><pre><span class="p">$</span> curl https://api.agent-datadog.dev/api/cost/compare?model=gpt-4o</pre></div>
+      <div class="cmd-card"><h4>Benchmark API</h4><pre><span class="p">$</span> curl https://api.agent-datadog.dev/api/cost/benchmark</pre></div>
+      <div class="cmd-card"><h4>Open Dashboard</h4><pre><span class="p">$</span> open http://localhost:8000
+<span class="c"># SSE live stream · cost trends · latency heatmap · comparison matrix</span></pre></div>
+      <div class="cmd-card"><h4>Find Best Value Model</h4><pre><span class="p">$</span> curl -s https://api.agent-datadog.dev/api/cost/compare?model=gpt-4o \
+  <span class="f">|</span> jq <span class="v">'.best_value'</span></pre></div>
+      <div class="cmd-card"><h4>Compare Across Frameworks</h4><pre><span class="p">$</span> curl -s https://api.agent-datadog.dev/api/cost/benchmark \
+  <span class="f">|</span> jq <span class="v">'.recommendations'</span></pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="inner">
+    <h2><span>🛡️</span> What It Does</h2>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">💰</div><h4>Cross-Framework Cost Comparison</h4><p>Compare input/output token pricing across OpenAI, Anthropic, DeepSeek, Google, and Mistral. Query by model name, get side-by-side cost, latency, and error-rate data.</p></div>
+      <div class="feat-card"><div class="icon">📊</div><h4>Benchmark Engine</h4><p>Full benchmark matrix for all 14 models. Sortable by cost, latency, or composite score. Weighted scoring: cost 40%, latency 30%, reliability 30%.</p></div>
+      <div class="feat-card"><div class="icon">📡</div><h4>SSE Live Stream</h4><p>Real-time event stream via Server-Sent Events. Cost updates, latency alerts, and error spike notifications pushed directly to your dashboard.</p></div>
+      <div class="feat-card"><div class="icon">📈</div><h4>Dashboard Panel</h4><p>Vanilla JS dashboard with cost trends, latency heatmap, error rate tracking, and framework comparison matrix. No build tools required.</p></div>
+      <div class="feat-card"><div class="icon">🏆</div><h4>Best Value Detection</h4><p>Context-aware best-value recommendation. Not just the cheapest model — the best cost/latency/reliability tradeoff for your use case.</p></div>
+      <div class="feat-card"><div class="icon">🔌</div><h4>Datadog Exporter</h4><p>Push metrics to Datadog APM for unified observability. Histogram, gauge, and event types supported. Integrate with your existing monitoring stack.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="models">
+  <div class="inner">
+    <h2><span>🧠</span> 5 Frameworks · 14 Models</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="fw-icon">⚡</div>
+        <h4>OpenAI</h4>
+        <div class="count">4</div>
+        <div class="range">$0.04–$2.00 / 100k tokens</div>
+        <div class="best">🏆 Best: gpt-4o-mini (9.1 score)</div>
+      </div>
+      <div class="pricing-card">
+        <div class="fw-icon">🎭</div>
+        <h4>Anthropic</h4>
+        <div class="count">3</div>
+        <div class="range">$0.24–$4.50 / 100k tokens</div>
+        <div class="best">🏆 Best: claude-3.5-haiku (8.2 score)</div>
+      </div>
+      <div class="pricing-card">
+        <div class="fw-icon">🐋</div>
+        <h4>DeepSeek</h4>
+        <div class="count">2</div>
+        <div class="range">$0.02–$0.14 / 100k tokens</div>
+        <div class="best">🏆 Best: deepseek-chat (8.8 score · $0.02)</div>
+      </div>
+      <div class="pricing-card">
+        <div class="fw-icon">🌐</div>
+        <h4>Google</h4>
+        <div class="count">3</div>
+        <div class="range">$0.02–$0.31 / 100k tokens</div>
+        <div class="best">🏆 Best: gemini-2.0-flash (9.0 score · $0.03)</div>
+      </div>
+      <div class="pricing-card">
+        <div class="fw-icon">🌊</div>
+        <h4>Mistral</h4>
+        <div class="count">2</div>
+        <div class="range">$0.04–$0.40 / 100k tokens</div>
+        <div class="best">🏆 Best: mistral-small (8.7 score · $0.04)</div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:32px">📊 Composite Score Rankings</h3>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Rank</th><th>Model</th><th>Framework</th><th>Cost / 100k</th><th>Latency</th><th>Error Rate</th><th>Score</th></tr>
+        <tr><td>1</td><td><strong>gpt-4o-mini</strong></td><td>OpenAI</td><td>$0.04</td><td>420ms</td><td>0.8%</td><td><span class="tag y">9.1</span></td></tr>
+        <tr><td>2</td><td><strong>gemini-2.0-flash</strong></td><td>Google</td><td>$0.03</td><td>350ms</td><td>0.7%</td><td><span class="tag y">9.0</span></td></tr>
+        <tr><td>3</td><td><strong>deepseek-chat</strong></td><td>DeepSeek</td><td>$0.02</td><td>650ms</td><td>1.1%</td><td><span class="tag y">8.8</span></td></tr>
+        <tr><td>4</td><td><strong>mistral-small</strong></td><td>Mistral</td><td>$0.04</td><td>400ms</td><td>1.0%</td><td><span class="tag y">8.7</span></td></tr>
+        <tr><td>5</td><td><strong>gemini-1.5-flash</strong></td><td>Google</td><td>$0.02</td><td>320ms</td><td>1.4%</td><td><span class="tag y">8.6</span></td></tr>
+        <tr><td>6</td><td><strong>gpt-3.5-turbo</strong></td><td>OpenAI</td><td>$0.10</td><td>380ms</td><td>0.5%</td><td><span class="tag y">8.5</span></td></tr>
+        <tr><td>7</td><td><strong>claude-3.5-haiku</strong></td><td>Anthropic</td><td>$0.24</td><td>510ms</td><td>0.6%</td><td><span class="tag g">8.2</span></td></tr>
+        <tr><td>8</td><td><strong>gemini-1.5-pro</strong></td><td>Google</td><td>$0.31</td><td>780ms</td><td>0.9%</td><td><span class="tag g">8.0</span></td></tr>
+        <tr><td>9</td><td><strong>gpt-4o</strong></td><td>OpenAI</td><td>$0.63</td><td>890ms</td><td>1.2%</td><td><span class="tag g">7.8</span></td></tr>
+        <tr><td>10</td><td><strong>claude-3.5-sonnet</strong></td><td>Anthropic</td><td>$0.90</td><td>950ms</td><td>1.0%</td><td><span class="tag g">7.5</span></td></tr>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Composite score = cost (40%) + latency (30%) + reliability (30%). Data simulated for demo purposes.</p>
+  </div>
+</section>
+
+<section id="docs" class="alt">
+  <div class="inner">
+    <h2><span>📖</span> Documentation & Demos</h2>
+    <div class="doc-grid">
+      <a href="demos/agent-datadog-product-definition.html" class="doc-card" target="_blank">
+        <div class="d-icon">📘</div>
+        <h4>Product Definition</h4>
+        <p>Architecture, competitive analysis, API reference, pricing table</p>
+      </a>
+      <a href="demos/agent-datadog-demo.html" class="doc-card" target="_blank">
+        <div class="d-icon">🎮</div>
+        <h4>Interactive Dashboard Demo</h4>
+        <p>Simulated dashboard with cost bars, latency charts, comparison table, and SSE live stream</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog/blob/main/README.md" class="doc-card" target="_blank">
+        <div class="d-icon">📄</div>
+        <h4>README</h4>
+        <p>Installation, API documentation, all endpoints, roadmap</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-datadog" class="doc-card" target="_blank">
+        <div class="d-icon">💻</div>
+        <h4>GitHub Repo</h4>
+        <p>Source code, FastAPI app, pricing data, dashboard templates</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <h2><span>❓</span> FAQ</h2>
+    <div class="faq-item">
+      <div class="q">How is this different from AgentWatch?</div>
+      <div class="a">AgentWatch is a single-framework monitoring tool for OpenAI calls. Agent Datadog <strong>forks AgentWatch</strong> and adds a cross-framework comparison layer — cost/latency/error observability across <strong>5 frameworks and 14 models</strong>. AgentWatch answers "Is my agent healthy?" Agent Datadog answers "Which agent setup costs me the least?"</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Why not just use LangSmith or Helicone?</div>
+      <div class="a">LangSmith is tightly coupled to LangChain. Helicone proxies OpenAI calls. Neither provides <strong>cross-model cost comparison</strong>. When you're deciding between gpt-4o, claude-3.5-sonnet, and deepseek-chat — which saves you the most? Agent Datadog's benchmark engine answers this directly.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Is it open source?</div>
+      <div class="a">Yes. MIT license. Fork of MIT-licensed AgentWatch (364 lines of FastAPI). The cross-framework comparison layer is our addition.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">What's the roadmap?</div>
+      <div class="a"><strong>Phase 1 (✅ done):</strong> Core dashboard with SSE stream, cost/latency/error monitoring. <strong>Phase 2 (🚧):</strong> Dashboard comparison panel with visual model selector and side-by-side charting. <strong>Phase 3 (🔲):</strong> agent-cost CLI integration and Datadog exporter.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Can I add my own framework?</div>
+      <div class="a">Yes. The pricing table is a simple data structure. Add a new framework with model names, pricing, and benchmark data — the comparison engine works automatically.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">How is the composite score calculated?</div>
+      <div class="a">Weighted scoring: <strong>cost per 100k tokens (40%)</strong> + <strong>average latency (30%)</strong> + <strong>reliability = 1 - error_rate (30%)</strong>. All dimensions normalized to 0-10 scale. The weights are configurable.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <p>Agent Datadog v0.1.0 · MIT License · <a href="https://github.com/jasoneip01-pixel/agent-datadog">GitHub</a> · 
+    <a href="demos/agent-datadog-product-definition.html">Product Def</a> · 
+    <a href="demos/agent-datadog-demo.html">Demo</a></p>
+    <p style="font-size:11px;margin-top:6px">Cross-Framework Agent Observability — 5 frameworks · 14 models · AgentWatch Fork · pip install</p>
+  </div>
+</footer>
+
+</body>
+</html>

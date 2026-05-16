@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,maximum-scale=5.0">
+<meta name="description" content="Agent Cost CLI — Cross-framework Agent Inference Cost Tracking. pip install agent-cost-cli. Compare costs across OpenAI, Anthropic, DeepSeek, Google, Mistral in one CLI command.">
+<meta property="og:title" content="Agent Cost CLI — Agent Inference Cost Tracking CLI">
+<meta property="og:description" content="Cross-framework cost comparison for Agent AI inference. 5 frameworks, 14+ models. cat agent_log.jsonl | agent-cost --frameworks all">
+<meta property="og:url" content="https://jasoneip01-pixel.github.io/agent-cost-cli/">
+<meta property="og:type" content="website">
+<title>Agent Cost CLI — Agent Inference Cost Tracking | v0.1.0</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --pass:#4ade80; --fail:#ef4444; --warn:#fbbf24; --accent:#4dd0e1; --blue:#60a5fa; --purple:#a78bfa;
+  --max-w:1100px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.04) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.04) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:15px;line-height:1.7;
+}
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(9,13,20,.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);
+  padding:10px 0;
+}
+nav .inner{
+  max-width:var(--max-w);margin:0 auto;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+}
+nav .brand{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px}
+nav .brand span{color:var(--accent)}
+nav .brand .ver{font-size:10px;color:var(--muted);background:var(--panel2);padding:2px 6px;border-radius:4px}
+nav .links{display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+nav .links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .12s}
+nav .links a:hover{color:var(--text)}
+nav .gh{display:flex;align-items:center;gap:4px;font-size:12px}
+section{padding:70px 0}
+section.alt{background:rgba(255,255,255,.01)}
+.inner{max-width:var(--max-w);margin:0 auto;padding:0 24px}
+h2{font-size:28px;font-weight:700;margin-bottom:32px;letter-spacing:-.3px}
+h2 span{color:var(--accent)}
+h3{font-size:18px;font-weight:600;margin-bottom:12px}
+p{color:var(--muted);margin-bottom:12px;line-height:1.75}
+p strong{color:var(--text)}
+.hero{padding:80px 0 60px;text-align:center}
+.hero h1{font-size:44px;font-weight:800;letter-spacing:-1px;margin-bottom:16px;line-height:1.2}
+.hero h1 .hl{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero .subtitle{font-size:17px;color:var(--muted);max-width:640px;margin:0 auto 32px}
+.hero .ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:11px 22px;border-radius:8px;font-size:14px;font-weight:600;
+  text-decoration:none;transition:all .15s;cursor:pointer;
+}
+.btn-p{background:var(--accent);color:#0a0e14;border:none}
+.btn-p:hover{background:#5de0ee;transform:translateY(-1px)}
+.btn-s{background:var(--panel);color:var(--text);border:1px solid var(--line)}
+.btn-s:hover{border-color:rgba(148,200,255,.25);background:var(--panel2)}
+.install-bar{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:12px 20px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  margin-top:20px;
+}
+.install-bar .code{color:var(--pass);user-select:all}
+.install-bar .copy{font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;padding:4px 8px;border-radius:4px}
+.install-bar .copy:hover{color:var(--text);background:var(--panel)}
+.stats-row{display:flex;gap:40px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+.stat-item{text-align:center}
+.stat-item .num{font-size:36px;font-weight:800;color:var(--accent)}
+.stat-item .label{font-size:12px;color:var(--muted);margin-top:4px}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;transition:all .2s;
+}
+.feat-card:hover{border-color:rgba(148,200,255,.18)}
+.feat-card .icon{font-size:24px;margin-bottom:12px}
+.feat-card h4{font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text)}
+.feat-card p{font-size:12px;line-height:1.65;margin:0}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cmd-card{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:20px;overflow:hidden;
+}
+.cmd-card h4{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:10px}
+.cmd-card pre{
+  font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;
+  color:var(--muted);overflow-x:auto;
+}
+.cmd-card pre .p{color:var(--pass)}
+.cmd-card pre .f{color:var(--blue)}
+.cmd-card pre .v{color:var(--accent)}
+.cmd-card pre .c{color:rgba(255,255,255,.25)}
+.copy-block{
+  background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+  padding:16px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;
+  position:relative;line-height:1.7;overflow-x:auto;white-space:pre;
+  color:var(--text);
+}
+.copy-block .lang{position:absolute;top:8px;right:12px;font-size:10px;color:var(--muted)}
+.copy-block .cp{position:absolute;top:8px;right:56px;font-size:10px;color:var(--muted);cursor:pointer;border:none;background:none}
+.copy-block .cp:hover{color:var(--accent)}
+.table-wrap{overflow-x:auto;margin:12px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;background:var(--panel2)}
+tr:hover{background:rgba(255,255,255,.02)}
+td:first-child{font-weight:500;color:var(--text)}
+.tag{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600}
+.tag.y{background:rgba(74,222,128,.1);color:var(--pass)}
+.tag.n{background:rgba(239,68,68,.1);color:var(--fail)}
+.tag.w{background:rgba(251,191,36,.1);color:var(--warn)}
+.tag.u{background:rgba(167,139,250,.12);color:var(--purple)}
+.tag.g{background:rgba(96,165,250,.12);color:var(--blue)}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.doc-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;
+  padding:20px;text-align:center;text-decoration:none;display:block;transition:all .2s;
+}
+.doc-card:hover{border-color:rgba(148,200,255,.18);transform:translateY(-2px)}
+.doc-card .d-icon{font-size:28px;margin-bottom:8px}
+.doc-card h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.doc-card p{font-size:11px;color:var(--muted);margin:0}
+.faq-item{margin-bottom:20px}
+.faq-item .q{font-weight:600;color:var(--text);font-size:15px;margin-bottom:4px}
+.faq-item .a{color:var(--muted);font-size:14px;line-height:1.7}
+footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  text-align:center;color:var(--muted);font-size:13px;
+}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media(max-width:834px){
+  .feat-grid,.doc-grid{grid-template-columns:1fr 1fr}
+  .cmd-grid{grid-template-columns:1fr}
+  .hero h1{font-size:34px}
+  .hero .subtitle{font-size:15px}
+}
+@media(max-width:480px){
+  .feat-grid,.cmd-grid,.doc-grid{grid-template-columns:1fr}
+  .hero h1{font-size:26px}
+  .hero .subtitle{font-size:14px}
+  .stats-row{gap:20px}
+  .stat-item .num{font-size:28px}
+  h2{font-size:22px}
+  nav .links{gap:10px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="brand">Agent <span>Cost</span> <span class="ver">v0.1.0</span></div>
+    <div class="links">
+      <a href="#quickstart">Quick Start</a>
+      <a href="#features">Features</a>
+      <a href="#docs">Docs</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" class="gh" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="inner">
+    <h1><span class="hl">Agent</span> Inference Cost Tracker</h1>
+    <p class="subtitle">Cross-framework cost comparison CLI — feed it one agent_log.jsonl, compare costs across <strong>5 frameworks · 14+ models</strong> in a single command. Like <strong>pricing.lookup × cross-stitch</strong> for your agent inference costs.</p>
+    <div class="ctas">
+      <a href="#quickstart" class="btn btn-p">⚡ Get Started</a>
+      <a href="#docs" class="btn btn-s">📖 Documentation</a>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" class="btn btn-s" target="_blank">⭐ GitHub</a>
+    </div>
+    <div class="install-bar">
+      <span class="code">pip install agent-cost-cli</span>
+      <button class="copy" onclick="navigator.clipboard.writeText('pip install agent-cost-cli');this.textContent='copied!';setTimeout(()=>this.textContent='copy',1500)">copy</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="num">5</div><div class="label">Frameworks</div></div>
+      <div class="stat-item"><div class="num">14+</div><div class="label">Models Priced</div></div>
+      <div class="stat-item"><div class="num">3</div><div class="label">CLI Flags</div></div>
+      <div class="stat-item"><div class="num">2</div><div class="label">Output Formats</div></div>
+      <div class="stat-item"><div class="num">1</div><div class="label">Phase Complete</div></div>
+      <div class="stat-item"><div class="num">MIT</div><div class="label">License</div></div>
+    </div>
+  </div>
+</div>
+
+<section id="quickstart">
+  <div class="inner">
+    <h2><span>⚡</span> Quick Start</h2>
+    <div class="cmd-grid">
+      <div class="cmd-card"><h4>Install</h4><pre><span class="p">$</span> pip install agent-cost-cli</pre></div>
+      <div class="cmd-card"><h4>Single Framework Cost</h4><pre><span class="p">$</span> cat agent_log.jsonl | agent-cost <span class="f">--framework</span> <span class="v">openai</span></pre></div>
+      <div class="cmd-card"><h4>Cross-Framework Comparison</h4><pre><span class="p">$</span> cat agent_log.jsonl | agent-cost <span class="f">--frameworks</span> <span class="v">all</span></pre></div>
+      <div class="cmd-card"><h4>Summary Mode (compact)</h4><pre><span class="p">$</span> cat agent_log.jsonl | agent-cost <span class="f">--frameworks</span> <span class="v">all</span> <span class="f">--summary</span></pre></div>
+      <div class="cmd-card"><h4>Compare Specific Frameworks</h4><pre><span class="p">$</span> cat agent_log.jsonl | agent-cost <span class="f">--frameworks</span> <span class="v">openai,deepseek</span></pre></div>
+      <div class="cmd-card"><h4>JSON Output (pipeline friendly)</h4><pre><span class="p">$</span> cat agent_log.jsonl | agent-cost <span class="f">--framework</span> <span class="v">openai</span> <span class="f">--output</span> <span class="v">json</span></pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="alt">
+  <div class="inner">
+    <h2><span>🛠️</span> Features</h2>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="icon">🔀</div><h4>Cross-Framework Compare</h4><p>One JSONL log, 5 framework views side-by-side. See exactly how much each framework would cost — same input, different pricing.</p></div>
+      <div class="feat-card"><div class="icon">💰</div><h4>14+ Model Pricing</h4><p>Full input/output/thinking/cache/tool_call pricing for every major model. OpenAI, Anthropic, DeepSeek, Google, Mistral — all covered.</p></div>
+      <div class="feat-card"><div class="icon">🔧</div><h4>CLI Pipeline First</h4><p><code>cat log | agent-cost --frameworks all --output json | jq</code> — Unix philosophy. No assumptions about your stack. Works everywhere.</p></div>
+      <div class="feat-card"><div class="icon">📊</div><h4>Detailed Breakdown</h4><p>See input, output, thinking, cache, and tool call costs independently. Know exactly where your money goes per framework.</p></div>
+      <div class="feat-card"><div class="icon">📈</div><h4>Benchmark Mode (WIP)</h4><p>Persistent benchmark runner with YAML scenario configuration. Multi-round stress testing. Historical result export.</p></div>
+      <div class="feat-card"><div class="icon">📡</div><h4>Datadog Integration (WIP)</h4><p>DogStatsD metrics push. Pre-built Datadog dashboard template. Cost anomaly alerts via Slack/Feishu webhooks.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="inner">
+    <h2><span>📋</span> Supported Frameworks</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Framework</th><th>Models</th><th>Pricing Coverage</th><th>Best For</th></tr>
+        <tr><td><strong>OpenAI</strong></td><td>gpt-4o, gpt-4o-mini, o1, o1-mini, o3-mini</td><td>input/output/reasoning/cache</td><td>General purpose, highest quality</td></tr>
+        <tr><td><strong>Anthropic</strong></td><td>claude-sonnet-4, claude-haiku-3-5, claude-opus-4</td><td>input/output/thinking/prompt_caching</td><td>Production agents, prompt caching saves 90%</td></tr>
+        <tr><td><strong>DeepSeek</strong></td><td>deepseek-chat, deepseek-reasoner</td><td>input/output/thinking/tool_call</td><td>Cheapest raw input pricing at $0.27/M</td></tr>
+        <tr><td><strong>Google</strong></td><td>gemini-2.0-flash, gemini-2.5-flash, gemini-1.5-pro</td><td>input/output/thinking/cache</td><td>Lowest total cost at $0.10/M input</td></tr>
+        <tr><td><strong>Mistral</strong></td><td>mistral-large, mistral-small, codestral</td><td>input/output</td><td>Coding-optimized, competitive pricing</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="docs" class="alt">
+  <div class="inner">
+    <h2><span>📖</span> Documentation & Demos</h2>
+    <div class="doc-grid">
+      <a href="demos/agent-cost-cli-product-definition.html" class="doc-card" target="_blank">
+        <div class="d-icon">📘</div>
+        <h4>Product Definition</h4>
+        <p>Architecture, pricing tables, competitive analysis, full spec breakdown</p>
+      </a>
+      <a href="demos/agent-cost-cli-demo.html" class="doc-card" target="_blank">
+        <div class="d-icon">🎮</div>
+        <h4>Interactive Demo</h4>
+        <p>Visual cost comparison across 5 frameworks with real simulated data</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli/blob/main/README.md" class="doc-card" target="_blank">
+        <div class="d-icon">📄</div>
+        <h4>README</h4>
+        <p>Installation, CLI reference, all commands, JSONL format spec</p>
+      </a>
+      <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" class="doc-card" target="_blank">
+        <div class="d-icon">💻</div>
+        <h4>GitHub Repo</h4>
+        <p>Source code, issues, benchmark runner, Datadog integration</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="inner">
+    <h2><span>❓</span> FAQ</h2>
+    <div class="faq-item">
+      <div class="q">What format does the input JSONL need to be?</div>
+      <div class="a">Each line is a JSON object with agent call metadata: <code>{"model": "gpt-4o", "input_tokens": 142580, "output_tokens": 38290, "thinking_tokens": 12450, "cached_input_tokens": 80120, "tool_call_tokens": 8300}</code>. That's it. Any standard agent logging framework can produce this.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Is this just a calculator or does it actually call APIs?</div>
+      <div class="a">It's a calculator. No API calls needed. It reads your agent log, looks up the per-token pricing for each framework, and computes the cost locally. Safe for offline use and CI/CD pipelines.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">How is this different from LangSmith or Helicone cost tracking?</div>
+      <div class="a">LangSmith/Helicone are observability tools — they show you what you already spent. Agent Cost CLI is a <strong>decision support tool</strong> — it shows you what you <strong>would have spent</strong> on alternative frameworks. Same log, 5 different cost views. It's for making framework switching decisions, not just accounting.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Is it open source?</div>
+      <div class="a">Yes. MIT license. The pricing tables are community-maintained and updated when frameworks change their rates.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">Can I add custom pricing?</div>
+      <div class="a">Not yet — custom pricing is on the roadmap for v0.2.0. For now, all 14+ model prices are pre-loaded and versioned with each release.</div>
+    </div>
+    <div class="faq-item">
+      <div class="q">How fast is it?</div>
+      <div class="a">~10ms per framework for a typical agent log of 200-300 calls. The cross-framework comparison (all 5 frameworks) completes in under 50ms.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="inner">
+    <p>Agent Cost CLI v0.1.0 · MIT License · <a href="https://github.com/jasoneip01-pixel/agent-cost-cli">GitHub</a> · 
+    <a href="demos/agent-cost-cli-product-definition.html">Product Def</a> · 
+    <a href="demos/agent-cost-cli-demo.html">Demo</a></p>
+    <p style="font-size:11px;margin-top:6px">Agent Inference Cost Tracking — 5 frameworks · 14+ models · 3 CLI flags · <code>cat agent_log.jsonl | agent-cost --frameworks all</code></p>
+  </div>
+</footer>
+
+</body>
+</html>

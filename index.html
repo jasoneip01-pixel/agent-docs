@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Agent 项目文档中心</title>
+<style>
+:root{
+  --bg:#090d14; --panel:#111827; --panel2:#161f30;
+  --text:#e2e8f0; --muted:#8899aa; --line:rgba(148,200,255,.1);
+  --accent:#4dd0e1; --pass:#4ade80; --purple:#a78bfa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Inter',-apple-system,sans-serif;
+  background:radial-gradient(ellipse at 20% 10%,rgba(77,208,225,.04) 0%,transparent 40%),
+             radial-gradient(ellipse at 80% 60%,rgba(167,139,250,.04) 0%,transparent 40%),
+             var(--bg);
+  color:var(--text);font-size:14px;line-height:1.7;min-height:100vh;
+}
+.container{max-width:1000px;margin:0 auto;padding:40px 24px}
+header{text-align:center;padding:60px 0 40px}
+header h1{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+header h1 span{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:var(--muted);font-size:15px;max-width:500px;margin:0 auto}
+.stats{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:24px}
+.stat{text-align:center}
+.stat .num{font-size:28px;font-weight:700;color:var(--accent)}
+.stat .lbl{font-size:11px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:32px}
+.card{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:24px;transition:all .2s;text-decoration:none;color:inherit;
+  display:flex;flex-direction:column;
+}
+.card:hover{border-color:rgba(148,200,255,.2);transform:translateY(-2px)}
+.card .icon{font-size:28px;margin-bottom:10px}
+.card .name{font-size:16px;font-weight:700;margin-bottom:4px}
+.card .desc{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.card .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}
+.card .links a{
+  font-size:11px;color:var(--accent);background:rgba(77,208,225,.08);
+  padding:4px 10px;border-radius:5px;text-decoration:none;transition:all .1s;
+}
+.card .links a:hover{background:rgba(77,208,225,.18)}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🦞 <span>Agent 项目文档中心</span></h1>
+    <p>产品定义说明书 · 交互式 DEMO · GitHub 仓库 · 跨框架 Agent 工具链</p>
+    <div class="stats">
+      <div class="stat"><div class="num">5</div><div class="lbl">项目</div></div>
+      <div class="stat"><div class="num">15</div><div class="lbl">文档页面</div></div>
+      <div class="stat"><div class="num">F5</div><div class="lbl">框架对比</div></div>
+    </div>
+  </header>
+
+  <div class="cards">
+    <a class="card" href="projects/agent-cost-cli/">
+      <div class="icon">💰</div>
+      <div class="name">agent-cost-cli</div>
+      <div class="desc">Agent 推理成本追踪 CLI — 跨框架 5 框架成本对比。JSONL 解析 + 汇总 + Benchmark</div>
+      <div class="links">
+        <a href="projects/agent-cost-cli/demos/agent-cost-cli-product-definition.html">📄 产品定义</a>
+        <a href="projects/agent-cost-cli/demos/agent-cost-cli-demo.html">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/agent-cost-cli" target="_blank">GitHub</a>
+      </div>
+    </a>
+
+    <a class="card" href="projects/mcp-registry/">
+      <div class="icon">📦</div>
+      <div class="name">MCP Registry</div>
+      <div class="desc">Agent 的 npm — MCP 工具发现与分发。寄生 MCP 协议，30 工具种子，每日采集 cron</div>
+      <div class="links">
+        <a href="projects/mcp-registry/demos/mcp-registry-product-definition.html">📄 产品定义</a>
+        <a href="projects/mcp-registry/demos/mcp-registry-demo.html">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/mcp-registry" target="_blank">GitHub</a>
+      </div>
+    </a>
+
+    <a class="card" href="projects/agent-datadog/">
+      <div class="icon">📊</div>
+      <div class="name">Agent Datadog</div>
+      <div class="desc">跨框架 Agent 可观测性平台。AgentWatch Fork + 5 框架成本对比层 + SSE 实时流</div>
+      <div class="links">
+        <a href="projects/agent-datadog/demos/agent-datadog-product-definition.html">📄 产品定义</a>
+        <a href="projects/agent-datadog/demos/agent-datadog-demo.html">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/agent-datadog" target="_blank">GitHub</a>
+      </div>
+    </a>
+
+    <a class="card" href="projects/skill-surface-diff/">
+      <div class="icon">🔍</div>
+      <div class="name">Skill Surface Diff</div>
+      <div class="desc">Agent Skill 变更面差异分析。检测两个版本间的权限扩张、脚本变更、工具面变化</div>
+      <div class="links">
+        <a href="projects/skill-surface-diff/demos/skill-surface-diff-product-definition.html">📄 产品定义</a>
+        <a href="projects/skill-surface-diff/demos/skill-surface-diff-demo.html">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/skill-surface-diff" target="_blank">GitHub</a>
+      </div>
+    </a>
+
+    <a class="card" href="projects/skill-scanner/">
+      <div class="icon">🛡️</div>
+      <div class="name">Skill Scanner</div>
+      <div class="desc">Agent Skill 供应链安全扫描。Prompt Injection / Data Exfil / Permission Overreach 检测</div>
+      <div class="links">
+        <a href="projects/skill-scanner/demos/skill-scanner-product-definition.html">📄 产品定义</a>
+        <a href="projects/skill-scanner/demos/agent-skills-scanner-demo.html">🎮 DEMO</a>
+        <a href="https://github.com/jasoneip01-pixel/skill-scanner" target="_blank">GitHub</a>
+      </div>
+    </a>
+  </div>
+</div>
+</body>
+</html>
